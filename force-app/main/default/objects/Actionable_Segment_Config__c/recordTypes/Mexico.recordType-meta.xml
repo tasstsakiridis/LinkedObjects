@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mexico</fullName>
+    <active>true</active>
+    <label>Mexico</label>
+    <picklistValues>
+        <picklist>Channel__c</picklist>
+        <values>
+            <fullName>Combera</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Distributor</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>EVENTOS</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>INTEGRATED</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>LKA</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>NON RETAIL</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Non-Sellable</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>OFF PREMISE</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>ON PREMISE</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Off</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Off DH</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Off Modern</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Off Traditional</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>On</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Parent</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub_Wholesaler</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>UNCLASSIFIED</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Wholesaler</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Dimension__c</picklist>
+        <values>
+            <fullName>Energy Levels</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Execution Allowance</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Premiumness</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Training %26 Incentives</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Group__c</picklist>
+        <values>
+            <fullName>Cash %26 Carry</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Convenience Store</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>DH</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Department Store</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Distributor</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Duty Free</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Government</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hyper %3E 5000 m%C2%B2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hyper Market</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hyper from 2500 to 5000 m%C2%B2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Kühlschrank</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Kühlschrank %2B JDs Tannenbaum</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Liquor Store</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>National Chain</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Other Store</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Private</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>RTD Hotspot</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub Wholesalers</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Supermarché %3C 800 m%C2%B2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Supermarché %3E 1200 m%C2%B2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Supermarché from 800 to 1200 m%C2%B2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Varejo</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Wholesalers</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>WithMeal</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>eCommerce</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Type__c</picklist>
+        <values>
+            <fullName>Actionable Segment Config</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Segment Config</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

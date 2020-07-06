@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <name>CustomField</name>
+        <members>Survey__c.Calculate_Actionable_Segment__c</members>
+        <members>Survey_Question__c.Dimension__c</members>
+        <members>Survey_Question__c.Grouping__c</members>
+        <members>Survey_Question__c.Point_Values__c</members>
+        <members>SurveyQuestionResponse__c.Dimension__c</members>
+        <members>SurveyQuestionResponse__c.Point_Value__c</members>
+        <members>Actionable_Segment_Config__c.Channel__c</members>
+        <members>Actionable_Segment_Config__c.Dimension__c</members>
+        <members>Actionable_Segment_Config__c.Group__c</members>
+        <members>Actionable_Segment_Config__c.Market__c</members>
+        <members>Actionable_Segment_Config__c.Point_Value__c</members>
+        <members>Actionable_Segment_Config__c.Position__c</members>
+        <members>Actionable_Segment_Config__c.Segment_Value__c</members>
+        <members>Actionable_Segment_Config__c.Type__c</members>
+    </types>
+    <types>
+        <name>CustomObject</name>
+        <members>Actionable_Segment_Config__c</members>
+    </types>
+    <types>
+        <name>FlowDefinition</name>
+        <members>SurveyTaken</members>
+    </types>
+    <types>
+        <name>ApexClass</name>
+        <members>CalculateActionableSegment</members>
+        <members>ViewSurveyController</members>
+    </types>
+    <version>46.0</version>
+</Package>

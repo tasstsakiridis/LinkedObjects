@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Point_Values__c</fullName>
+    <description>Comma delimited point values to correspond with comma delimited list of options</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Comma delimited point values to correspond with comma delimited list of options</inlineHelpText>
+    <label>Point Values</label>
+    <length>255</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
