@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>50.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Link Objects Config</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__Tab</target>
+        <target>lightningCommunity__Default</target>
+        <target>lightningCommunity__Page</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__RecordPage">
+            <property name="recordId" type="String" label="Record Id"  default=""/>
+            <property name="marketName" type="String" label="Market"  default=""/>
+            <property name="sourceObject" type="String" label="Source Object" datasource="Account,Promotion_Activity__c,Promotion__c" default="Account"/>
+            <property name="linkedObject" type="String" label="Linked Object" datasource="Account,Promotion_Activity__c,Promotion__c" default="Promotion_Activity__c"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

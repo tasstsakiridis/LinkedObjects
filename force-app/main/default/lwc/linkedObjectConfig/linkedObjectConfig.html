@@ -1,0 +1,52 @@
+<template>
+    <lightning-card class="slds-p-around_small">
+        <p slot="title">{name}</p>
+
+        <div class="slds-m-vertical_medium">
+            <template if:true={objectsSelected}>                
+                <lightning-layout>
+                    <lightning-layout-item size="9" padding="around-small">
+                        <c-linked-object-preview record-id={recordId}
+                                                bf-config={bfConfig}
+                                                source-object-info={sourceObjectInfo}
+                                                linked-object-info={linkedObjectInfo}
+                                                linked-object-config-id={bfConfigId}></c-linked-object-preview>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="3" padding="around-small" class="slds-border_left border-shadow">
+                        <c-linked-object-filter-list record-id={recordId} 
+                                                        bf-config={bfConfig}
+                                                        market={marketId}
+                                                        filter-logic={filterLogic}
+                                                        source-object={sourceObject} 
+                                                        source-object-info={sourceObjectInfo}
+                                                        linked-object={linkedObject}
+                                                        linked-object-info={linkedObjectInfo}
+                                                        can-edit-filters={canEditFilters}
+                                                        onsave={updateConfig}
+                                                        onrefresh={refreshPreview}>
+                        </c-linked-object-filter-list>
+                    </lightning-layout-item>
+                </lightning-layout>                
+            </template>
+
+            <template if:false={objectsSelected}>
+                <div class="slds-m-around_large">
+                    <lightning-radio-group label={sourceObjectLabel}
+                                            options={sourceObjectOptions}
+                                            value={sourceObject}
+                                            type="button"
+                                            onchange={handleSourceObjectChange}>
+                    </lightning-radio-group>
+                </div>
+                <div class="slds-m-around_large">
+                    <lightning-radio-group label={linkedObjectLabel}
+                                            options={linkedObjectOptions}
+                                            value={linkedObject}
+                                            type="button"
+                                            onchange={handleLinkedObjectChange}>
+                    </lightning-radio-group>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

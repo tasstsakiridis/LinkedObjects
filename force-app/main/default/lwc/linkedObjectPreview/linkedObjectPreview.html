@@ -1,0 +1,108 @@
+<template>
+    <lightning-card >
+        <p slot="title">{title}</p>
+        
+        <!--
+        <lightning-button-group slot="actions">
+            <lightning-button label="Refresh" onclick={refreshPreview}></lightning-button>
+        </lightning-button-group>
+        -->
+    
+        <template if:true={isWorking}>
+            <lightning-spinner alternative-text="Loading. Please Wait..." size="large" ></lightning-spinner>
+        </template>        
+        <div class="slds-m-horizontal_medium">
+            <template if:true={data}>
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-text-align_center">
+                                <c-linked-object-preview-info type="text" 
+                                                            title={sourceObjectLabelPlural}
+                                                            info-text={numberOfSourceObjectRows}>
+                                </c-linked-object-preview-info>
+                            </div>
+                            <div class="slds-col slds-border_left slds-text-align_center">
+                                <c-linked-object-preview-info type="text" 
+                                                            title={linkedObjectLabelPlural}
+                                                            info-text={numberOfLinkedObjectRows}>
+                                </c-linked-object-preview-info>
+                            </div>
+                            <div class="slds-col slds-border_left slds-text-align_center">
+                                <c-linked-object-preview-info type="text"
+                                                              index="1"
+                                                              record-id={recordId}
+                                                              field-object-info={linkedObjectInfo}
+                                                              fields={selectedFields}
+                                                              selected-field={previewField1}
+                                                              counters={counters}
+                                                              rows={data}
+                                                              onfieldupdate={updatePreviewField}>
+                                </c-linked-object-preview-info>
+                            </div>
+                            <div class="slds-col slds-border_left slds-text-align_center">
+                                <c-linked-object-preview-info type="text"
+                                                              index="2"
+                                                              record-id={recordId}
+                                                              field-object-info={linkedObjectInfo}
+                                                              fields={selectedFields}
+                                                              selected-field={previewField2}
+                                                              counters={counters}
+                                                              rows={data}
+                                                              onfieldupdate={updatePreviewField}>
+                                </c-linked-object-preview-info>
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="around-small" size="12">
+                        <lightning-card>
+                            <lightning-button-group slot="actions">
+                                <template if:true={selectedRows.length}>
+                                    <lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>
+                                </template>
+                                <lightning-button-icon icon-name="utility:list" onclick={selectFieldsToDisplay}></lightning-button-icon>
+                            </lightning-button-group>
+
+                            <div style="height: 600px; overflow-y: scroll;" class="slds-border_left slds-border_right">
+                                <lightning-datatable key-field="Id"
+                                                    data={data}
+                                                    columns={columns}
+                                                    onrowaction={handleRowAction}
+                                                    onrowselection={handleRowSelection}>                                                
+                                </lightning-datatable>                
+                            </div>
+                        </lightning-card>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:false={data}>
+                <div class="slds-align_absolute-center">
+                    <p style="font-size: 24pt;">Nothing to show</p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+
+    <c-linked-object-filter-modal class="field-selector" size="small" oncancel={closeModal}>
+        <span slot="title">Select fields to display</span>
+        <div slot="body" class="slds-align_absolute-center">
+            <lightning-dual-listbox name="fields"
+                                    label="Select fields to display"
+                                    source-label="Available"
+                                    selected-label="Selected"
+                                    variant="label-hidden"
+                                    options={availableFields}
+                                    value={selectedFields}
+                                    onchange={handleFieldsChange}>
+            </lightning-dual-listbox>
+        </div>
+        <lightning-button
+            slot="footer"
+            variant="brand"
+            label="Apply"
+            onclick={applyFieldSelections}
+            class="slds-m-left_small">
+        </lightning-button>
+
+    </c-linked-object-filter-modal>
+</template>

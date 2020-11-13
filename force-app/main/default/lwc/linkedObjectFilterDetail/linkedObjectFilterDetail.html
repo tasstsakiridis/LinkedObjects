@@ -1,0 +1,100 @@
+<template>
+    <lightning-card>
+        <span slot="title">{title}</span>
+        <lightning-button-icon slot="actions" icon-name="utility:close" alternative-text="Cancel" title="close" variant="bare" onclick={closeFilter} ></lightning-button-icon>    
+
+        <lightning-button-group slot="footer">
+            <lightning-button label="Apply" title="Apply" variant="brand" onclick={applyChanges} ></lightning-button>
+        </lightning-button-group>
+
+        <template if:true={isWorking}>
+            <lightning-spinner alternative-text="loading" size="small" ></lightning-spinner>
+        </template>
+        <div>
+            <lightning-layout multiple-rows="true">
+                <lightning-layout-item size="12">
+                    <lightning-radio-group label=""
+                                            options={objectOptions}
+                                            value={object}
+                                            type="button"
+                                            onchange={handleObjectChange}>
+                    </lightning-radio-group>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" class="slds-m-vertical_small">
+                    <div>
+                            <!--<input type="text" class="slds-input" value={fieldName} onchange={handleFieldNameChange} />-->
+                            <lightning-combobox label={labels.field.label} value={fieldName}
+                                                options={availableFields}
+                                                onchange={handleFieldNameChange}>
+                            </lightning-combobox>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item size="12">
+                    <div>
+                        <lightning-combobox name="operatorCombo" label={labels.operator.label} 
+                                            value={operator} 
+                                            options={operatorOptions}
+                                            onchange={handleOperatorChange}>
+                        </lightning-combobox>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" class="slds-m-vertical_small">
+                    <div>
+                        <template if:true={fieldTypeBoolean}>
+                            <lightning-radio-group label={labels.value.label}
+                                                    value={fieldValue}
+                                                    options={booleanOptions}
+                                                    type="button"
+                                                    onchange={handleBooleanOptionChange}>
+                            </lightning-radio-group>
+                        </template>
+                        <template if:true={fieldTypeDateTime}>
+                            <lightning-input type="date" label={labels.value.label}
+                                                value={fieldValue}
+                                                onchange={handleFieldValueChange}>
+                            </lightning-input>                                      
+                        </template>
+                        <template if:true={fieldTypeNumeric}>
+                            <lightning-input type="number" label={labels.value.label}
+                                                value={fieldValue}
+                                                onchange={handleFieldValueChange}>
+                            </lightning-input>                                      
+                        </template>
+                        <template if:true={fieldTypeText}>                                
+                            <lightning-input type="text" label={labels.value.label}
+                                                value={fieldValue}
+                                                onchange={handleFieldValueChange}>
+                            </lightning-input>                                      
+                        </template>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+
+    </lightning-card>
+    
+    <!--
+    <c-linked-object-filter-modal class="fields-modal" onclick={hideDropdowns}>
+        <span slot="title">{object} fields</span>
+        <div slot="body">
+            <lightning-layout>
+                <lightning-layout-item size="8">
+                    <ul>
+                        <template for:each={fieldOptions} for:item="field">
+                            <li key={field.apiName} onclick={showFieldDetails}>{field.label}</li>
+                        </template>
+                    </ul>
+                </lightning-layout-item>
+                <lightning-layout-item size="4">
+                    <div class="slds-align_absolute-center">
+                        <p style="font-size: 14pt;">{selectedFieldLabel}</p>
+                        <p style="font-size: 12pt;">{selectedFieldApiName}</p>
+                        <p style="font-size: 10pt;">{selectedFieldType}</p>
+                        <lightning-button label={labels.select.label} class="slds-m-top_small" onclick={handleFieldSelected}></lightning-button>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+    </c-linked-object-filter-modal>   
+    --> 
+</template>

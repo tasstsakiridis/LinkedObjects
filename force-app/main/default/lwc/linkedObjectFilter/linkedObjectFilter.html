@@ -1,0 +1,33 @@
+<template>
+    <template if:true={isEditing}>
+        <div class="lo-filter-container_editing slds-p-around_small">
+            <c-linked-object-filter-detail filter={filter}
+                                            source-object={sourceObject}
+                                            source-object-info={sourceObjectInfo}
+                                            linked-object={linkedObject}
+                                            linked-object-info={linkedObjectInfo}
+                                            onsave={updateFilter}
+                                            oncancel={closeFilterDialog}>
+            </c-linked-object-filter-detail>
+        </div>
+    </template>
+
+    <template if:false={isEditing}>
+        <div class="slds-grid lo-filter-container">
+            <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+                {filterIndex}
+            </div>
+            <div class="slds-col">
+                <lightning-tile label={tileLabel}  class="slds-p-around_x-small" style="background-color: white;">
+                    <div>
+                        <span style="font-size: 8pt;">{operator}</span><span class="slds-m-left_x-small">{fieldValue}</span>
+                    </div>
+                </lightning-tile>
+            </div>
+            <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+                <lightning-button-icon icon-name="utility:edit" alternative-text="edit" title="edit" variant="bare" class="slds-m-right_x-small" onclick={editFilter} ></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:delete" alternative-text="remove" title="remove" variant="bare" onclick={removeFilter} ></lightning-button-icon>
+            </div>
+        </div>
+    </template>        
+</template>

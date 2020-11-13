@@ -1,0 +1,30 @@
+<template>
+    <template if:false={error}>
+        <template if:true={fields}>
+            <lightning-button-menu variant="bare" alternative-text="Select field" class="slds-float_right" onselect={handleFieldSelection}>
+                <template if:true={counters}>
+                    <template if:true={counters.length}>
+                        <lightning-menu-subheader label={labels.countby.label}></lightning-menu-subheader>
+                        <template for:each={counters} for:item="counter">
+                            <lightning-menu-item key={counter.Id} value={counter.Name} label={counter.Counter_Label__c}></lightning-menu-item>
+                        </template>        
+                        <lightning-menu-subheader label={labels.fields.label}></lightning-menu-subheader>
+                    </template>
+                </template>
+                <template for:each={fieldOptions} for:item="field">
+                    <lightning-menu-item key={field.value} value={field.value} label={field.label}></lightning-menu-item>
+                </template>
+            </lightning-button-menu>
+        </template>        
+        <template if:true={isTextTemplate}>
+            <p style="font-size: 18pt;">{title}</p>
+            <p style="font-size: 30pt;">{infoText}</p>
+        </template>
+        <template if:true={isChartTemplate}>
+            <div class="chart slds-var-m-around_medium" lwc:dom="manual"></div>
+        </template>
+    </template>
+    <template if:true={error}>
+        <c-error-panel errors={error}></c-error-panel>
+    </template>
+</template>

@@ -1,0 +1,47 @@
+<template>
+    <lightning-card>
+        <span slot="title">{title}</span>
+        <lightning-button-group slot="actions">
+            <template if:true={hasFilters}>
+                <!--<lightning-button label="Preview" onclick={preview} ></lightning-button>
+                <lightning-button label="Save" onclick={save}></lightning-button>-->
+            </template>
+            <!--
+            <lightning-button-menu alternative-text="Filter options" variant="border-filled" onselect={handleNewFilterSelect}>
+                <lightning-menu-item value="newfilter" label="New filter"></lightning-menu-item>
+                <lightning-menu-item value="newfilterlogic" label="Filter logic"></lightning-menu-item>
+            </lightning-button-menu>
+            -->
+            <lightning-button-icon icon-name="utility:add" alternative-text="Add" onclick={addNewFilter} class="slds-m-left_medium"></lightning-button-icon>
+        </lightning-button-group>
+
+        <div>
+            <lightning-layout multiple-rows="true">
+                <lightning-layout-item size="12" padding="around-small">
+                    <!--<lightning-button variant="base" label={suggestedFiltersLabel} class="slds-float_right slds-m-right_small" onclick={showSuggestedFilters}></lightning-button>-->
+                    <template if:true={showFilterLogic}>
+                        <lightning-textarea name="filterLogic" label="Filter Logic" value={filterLogic}></lightning-textarea>
+                    </template>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-small" size="12">
+                    <ul class="bottom-space">
+                        <template for:each={filters} for:item="filter" for:index="index">
+                            <li key={filter.Id} class="slds-item slds-p-vertical_xx-small">
+                                <c-linked-object-filter filter={filter} 
+                                                        filter-index={index}
+                                                        source-object={sourceObject}
+                                                        source-object-info={sourceObjectInfo}
+                                                        linked-object={linkedObject}
+                                                        linked-object-info={linkedObjectInfo}
+                                                        can-edit={canEditFilters}
+                                                        onsave={updateFilter}
+                                                        onremove={removeFilter}>
+                                </c-linked-object-filter>
+                            </li>
+                        </template>
+                    </ul>                            
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+    </lightning-card>
+</template>
