@@ -1,6 +1,6 @@
 <template>
     <template if:true={isEditing}>
-        <div class="lo-filter-container_editing slds-p-around_small">
+        <div class="lo-filter-container_editing slds-p-around_small slds-is-relative">
             <c-linked-object-filter-detail filter={filter}
                                             source-object={sourceObject}
                                             source-object-info={sourceObjectInfo}
@@ -29,5 +29,5 @@
                 <lightning-button-icon icon-name="utility:delete" alternative-text="remove" title="remove" variant="bare" onclick={removeFilter} ></lightning-button-icon>
             </div>
         </div>
-    </template>        
+    </template>
 </template>

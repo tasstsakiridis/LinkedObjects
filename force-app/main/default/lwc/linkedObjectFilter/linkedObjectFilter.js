@@ -1,6 +1,12 @@
 import { LightningElement, api, track } from 'lwc';
 
+import LABEL_SAVE from '@salesforce/label/c.Save';
+
 export default class LinkedObjectFilter extends LightningElement {
+    labels = {
+        save: { label: LABEL_SAVE }
+    };
+
     @api 
     canEditFilter = false;
 
@@ -21,6 +27,9 @@ export default class LinkedObjectFilter extends LightningElement {
 
     @api 
     filter;
+
+    @api 
+    filterType;
 
     get isEditing() {
         console.log('[linkedObjectFilter.isEditing] filter', this.filter);
@@ -87,6 +96,7 @@ export default class LinkedObjectFilter extends LightningElement {
     }
 
     closeFilterDialog(event) {
+        this.filter = {...this.filter};
         this.filter.isEditing = false;
     }
 
@@ -94,6 +104,8 @@ export default class LinkedObjectFilter extends LightningElement {
         console.log('[linkedObjectFilter] editFilter');
         this.filter = {...this.filter};
         this.filter.isEditing = true;
+        //this.template.querySelector(".filter-popover").show();
+
         console.log('[linkedObjectFilter.editFilter] filter', this.filter);
     }
 

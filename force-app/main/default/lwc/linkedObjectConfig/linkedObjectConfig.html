@@ -2,29 +2,95 @@
     <lightning-card class="slds-p-around_small">
         <p slot="title">{name}</p>
 
+        <template if:true={isWorking}>
+            <lightning-spinner alternative-text="loading" size="small" ></lightning-spinner>
+        </template>
+
         <div class="slds-m-vertical_medium">
             <template if:true={objectsSelected}>                
                 <lightning-layout>
                     <lightning-layout-item size="9" padding="around-small">
-                        <c-linked-object-preview record-id={recordId}
-                                                bf-config={bfConfig}
-                                                source-object-info={sourceObjectInfo}
-                                                linked-object-info={linkedObjectInfo}
-                                                linked-object-config-id={bfConfigId}></c-linked-object-preview>
+                            <c-linked-object-preview record-id={recordId}
+                                                    bf-config={bfConfig}
+                                                    counters={counters}
+                                                    actions={actions}
+                                                    source-object={sourceObject}
+                                                    source-object-info={sourceObjectInfo}
+                                                    source-object-fields={sourceObjectFields}
+                                                    linked-object={linkedObject}
+                                                    linked-object-info={linkedObjectInfo}
+                                                    linked-object-fields={linkedObjectFields}
+                                                    linked-object-config-id={bfConfigId}
+                                                    record-type={theRecord_SObjectType}
+                                                    onrefreshready={handleRefreshReady}>
+                            </c-linked-object-preview>
                     </lightning-layout-item>
                     <lightning-layout-item size="3" padding="around-small" class="slds-border_left border-shadow">
-                        <c-linked-object-filter-list record-id={recordId} 
-                                                        bf-config={bfConfig}
-                                                        market={marketId}
-                                                        filter-logic={filterLogic}
-                                                        source-object={sourceObject} 
-                                                        source-object-info={sourceObjectInfo}
-                                                        linked-object={linkedObject}
-                                                        linked-object-info={linkedObjectInfo}
-                                                        can-edit-filters={canEditFilters}
-                                                        onsave={updateConfig}
-                                                        onrefresh={refreshPreview}>
-                        </c-linked-object-filter-list>
+                        <lightning-tabset variant="scoped">
+                            <lightning-tab label={labels.actions.label}>
+                                <c-linked-object-item-list record-id={recordId}
+                                                            title={labels.actions.label}
+                                                            item-type="Action"
+                                                            bf-config={bfConfig}
+                                                            market={marketId}
+                                                            items={actions}
+                                                            source-object={sourceObject}
+                                                            source-object-info={sourceObjectInfo}
+                                                            source-object-fields={sourceObjectFields}
+                                                            linked-object={linkedObject}
+                                                            linked-object-info={linkedObjectInfo}
+                                                            linked-object-fields={linkedObjectFields}
+                                                            can-edit-actions={canEditActions}
+                                                            onaddnewitem={addNewItem}
+                                                            onupdate={updateConfigItem}
+                                                            ondelete={deleteConfigItem} >
+                                </c-linked-object-item-list>
+                                                            
+                            </lightning-tab>
+                            <lightning-tab label={labels.filters.label}>
+                                <c-linked-object-item-list record-id={recordId} 
+                                                            title={labels.filters.label}
+                                                            item-type="Filter"
+                                                            bf-config={bfConfig}
+                                                            items={filters}
+                                                            market={marketId}
+                                                            filter-logic={filterLogic}
+                                                            source-object={sourceObject} 
+                                                            source-object-info={sourceObjectInfo}
+                                                            source-object-fields={sourceObjectFields}
+                                                            linked-object={linkedObject}
+                                                            linked-object-info={linkedObjectInfo}
+                                                            linked-object-fields={linkedObjectFields}
+                                                            can-edit-filters={canEditFilters}
+                                                            onaddnewitem={addNewItem}
+                                                            onupdate={updateConfigItem}
+                                                            ondelete={deleteConfigItem}
+                                                            onrefresh={refreshPreview}>
+                                </c-linked-object-item-list>
+
+                            </lightning-tab>
+                            <lightning-tab label={labels.counters.label}>
+                                <c-linked-object-item-list record-id={recordId} 
+                                                            title={labels.counters.label}
+                                                            item-type="Counter"
+                                                            bf-config={bfConfig}
+                                                            items={counters}
+                                                            market={marketId}
+                                                            filter-logic={filterLogic}
+                                                            source-object={sourceObject} 
+                                                            source-object-info={sourceObjectInfo}
+                                                            source-object-fields={sourceObjectFields}
+                                                            linked-object={linkedObject}
+                                                            linked-object-info={linkedObjectInfo}
+                                                            linked-object-fields={linkedObjectFields}
+                                                            can-edit-filters={canEditFilters}
+                                                            onaddnewitem={addNewItem}
+                                                            onupdate={updateConfigItem}
+                                                            ondelete={deleteConfigItem}
+                                                            onrefresh={refreshPreview}>
+                                </c-linked-object-item-list>                                
+                            </lightning-tab>
+                        </lightning-tabset>
                     </lightning-layout-item>
                 </lightning-layout>                
             </template>

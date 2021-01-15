@@ -12,7 +12,7 @@
             <lightning-spinner alternative-text="Loading. Please Wait..." size="large" ></lightning-spinner>
         </template>        
         <div class="slds-m-horizontal_medium">
-            <template if:true={data}>
+            <template if:true={hasData}>
                 <lightning-layout multiple-rows="true">
                     <lightning-layout-item size="12">
                         <div class="slds-grid">
@@ -36,7 +36,10 @@
                                                               fields={selectedFields}
                                                               selected-field={previewField1}
                                                               counters={counters}
-                                                              rows={data}
+                                                              source-object={sourceObject}
+                                                              linked-object={linkedObject}
+                                                              source-object-rows={sourceObjectData}
+                                                              linked-object-rows={linkedObjectData}
                                                               onfieldupdate={updatePreviewField}>
                                 </c-linked-object-preview-info>
                             </div>
@@ -48,7 +51,10 @@
                                                               fields={selectedFields}
                                                               selected-field={previewField2}
                                                               counters={counters}
-                                                              rows={data}
+                                                              source-object={sourceObject}
+                                                              linked-object={linkedObject}
+                                                              source-object-rows={sourceObjectData}
+                                                              linked-object-rows={linkedObjectData}
                                                               onfieldupdate={updatePreviewField}>
                                 </c-linked-object-preview-info>
                             </div>
@@ -58,15 +64,40 @@
                         <lightning-card>
                             <lightning-button-group slot="actions">
                                 <template if:true={selectedRows.length}>
-                                    <lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>
+                                    <!--<lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>-->
+                                    <template for:each={availableActions} for:item="action">
+                                        <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand" class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                    </template>
+                                    <!--
+                                    <lightning-radio-group name="actionsGroups"
+                                                            options={availableActions}
+                                                            value={selectedAction}
+                                                            type="button"
+                                                            onchange={handleActionButtonChange}>
+                                    </lightning-radio-group>
+                                -->
                                 </template>
                                 <lightning-button-icon icon-name="utility:list" onclick={selectFieldsToDisplay}></lightning-button-icon>
                             </lightning-button-group>
 
-                            <div style="height: 600px; overflow-y: scroll;" class="slds-border_left slds-border_right">
+                            <template if:true={isBFConfig}>
+                            <div class="preview-table">
+                                <p class="slds-text-title_caps text-medium">{sourceObjectLabelPlural}</p>
                                 <lightning-datatable key-field="Id"
-                                                    data={data}
-                                                    columns={columns}
+                                                    data={sourceObjectData}
+                                                    columns={sourceObjectColumns}>
+                                </lightning-datatable>
+                            </div>
+                            </template>
+
+                            <div class="preview-table">
+                                <template if:true={isBFConfig}>
+                                    <p class="slds-text-title_caps text-medium">{linkedObjectLabelPlural}</p>
+                                </template>
+                                <lightning-datatable key-field="Id"
+                                                    data={linkedObjectData}
+                                                    columns={linkedObjectColumns}
+                                                    selected-rows={setSelectedRows}
                                                     onrowaction={handleRowAction}
                                                     onrowselection={handleRowSelection}>                                                
                                 </lightning-datatable>                
@@ -75,7 +106,7 @@
                     </lightning-layout-item>
                 </lightning-layout>
             </template>
-            <template if:false={data}>
+            <template if:false={hasData}>
                 <div class="slds-align_absolute-center">
                     <p style="font-size: 24pt;">Nothing to show</p>
                 </div>
@@ -91,7 +122,7 @@
                                     source-label="Available"
                                     selected-label="Selected"
                                     variant="label-hidden"
-                                    options={availableFields}
+                                    options={linkedObjectFields}
                                     value={selectedFields}
                                     onchange={handleFieldsChange}>
             </lightning-dual-listbox>

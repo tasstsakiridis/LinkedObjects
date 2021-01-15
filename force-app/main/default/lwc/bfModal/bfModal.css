@@ -1,0 +1,8 @@
+.slds-modal .slds-modal__content .slds-modal__container {
+    overscroll-behavior: none;
+    height: 70%;
+}
+.slds-modal__container {
+    max-width: 40rem !important;
+    min-width: 30rem !important;
+}

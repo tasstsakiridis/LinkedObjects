@@ -11,6 +11,12 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
     @api 
     recordId;
 
+    @api 
+    sourceObject;
+
+    @api 
+    linkedObject;
+
     @api
     type;
 
@@ -23,21 +29,38 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
     @api 
     infoText;
 
-    _rows;
+    _sourceObjectRows;
     @api 
-    get rows() {
+    get sourceObjectRows() {
+        return this._sourceObjectRows;
+    }
+    set sourceObjectRows(value) {
+        this._sourceObjectRows = value;
+        this.getFieldInfo();
+    }
+
+    _linkedObjectRows;
+    @api 
+    get linkedObjectRows() {
         return this._rows;
     }
-    set rows(value) {
-        this._rows = value;
+    set linkedObjectRows(value) {
+        this._linkedObjectRows = value;
         this.getFieldInfo();
     }
 
     @api 
     fieldObjectInfo;
 
+    _counters;
     @api
-    counters;
+    get counters() {
+        return this._counters;
+    }
+    set counters(value) {
+        this._counters = value;
+        console.log('[linkedObjectPreviewInfo.set counters] counters', value);
+    }
 
     _fields;
     fieldOptions = [];
@@ -73,9 +96,7 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
             this.infoText = '';
             this.title = '';
         } else {
-            if (this.rows != undefined && this.rows.length > 0) {
-                this.getFieldInfo();
-            }    
+            this.getFieldInfo();
         }
     }
 
@@ -133,13 +154,14 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
             return;
         }
 
+        console.log('[linkedObjectPreviewInfo.getFieldInfo] fieldOptions', this.fieldOptions);
         const fld = this.fieldOptions.find(f => f.value == this.selectedField);
         console.log('[linkedObjectPreviewInfo.getFieldInfo] fld', fld);
         if (fld) {
             console.log('[linkedObjectPreviewInfo.getFieldInfo] fields', this.fields);
             const detailsMap = new Map();
             console.log('[linkedObjectPreviewInfo.getFieldInfo] selectedField', this.selectedField);
-            this.rows.map(row => {
+            this.linkedObjectRows.map(row => {
                 let counter = 0; 
                 let fieldValue = row[this.selectedField];
                 if (detailsMap.has(fieldValue)) {
@@ -152,22 +174,37 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
 
             this.title = fld.label;
             this.infoText = detailsMap.size;
-        } else {
-            const counter = this.counters.find(ctr => ctr.Name == this.selectedField);
+        } else if (this.counters != undefined) {
+            console.log('[linkedObjectPreviewInfo.getFieldInfo] counters', JSON.parse(JSON.stringify(this.counters)));
+            const counter = this.counters.find(ctr => ctr.id == this.selectedField);
             console.log('[linkedObjectPreviewInfo.getFieldInfo] counter', counter);
             if (counter) {
-                this.title = counter.Counter_Label__c;
-                getCount({sourceRecordId: this.recordId,
-                          objectToCount: counter.Object_to_Count__c,
-                          fieldNameToQuery: counter.Field_Name_to_Query__c})
-                .then(result => {
-                    this.error = undefined;
-                    this.infoText = result.count;
-                    console.log('[linkedObjectPreviewInfo.getCount] result', JSON.parse(JSON.stringify(result)));
-                })
-                .catch(error => {
-                    this.error = error;
-                });    
+                this.title = counter.counterLabel;
+                if (counter.objectToCount == this.sourceObject) {
+                    const result = [];
+                    this.sourceObjectRows.every(r => {
+                        if (result.indexOf(r[counter.fieldName]) < 0) {
+                            result.push(r[counter.fieldName]);
+                        }
+                    });
+                    this.infoText = result.length;
+                } else {               
+                    //const result = this.linkedObjectRows.filter(r => r[counter.fieldName] == this.recordId);
+                    //this.infoText = result.length;
+                         
+                    getCount({sourceRecordId: this.recordId,
+                            objectToCount: counter.objectToCount,
+                            fieldNameToQuery: counter.fieldName})
+                    .then(result => {
+                        this.error = undefined;
+                        this.infoText = result.count;
+                        console.log('[linkedObjectPreviewInfo.getCount] result', JSON.parse(JSON.stringify(result)));
+                    })
+                    .catch(error => {
+                        this.error = error;
+                    });   
+                    
+                } 
             } else {
                 this.title = '';
                 this.infoText = '';

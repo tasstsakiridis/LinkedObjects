@@ -1,0 +1,18 @@
+<template>
+    <div class="slds-grid lo-container">
+        <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+            {itemIndex}
+        </div>
+        <div class="slds-col">
+            <lightning-tile label={title}  class="slds-p-around_x-small" style="background-color: white;">
+                <div>
+                    <span style="font-size: 8pt;">{subTitle}</span>
+                </div>
+            </lightning-tile>
+        </div>
+        <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+            <lightning-button-icon icon-name="utility:edit" alternative-text="edit" title="edit" variant="bare" class="slds-m-right_x-small" onclick={editItem} ></lightning-button-icon>
+            <lightning-button-icon icon-name="utility:delete" alternative-text="remove" title="remove" variant="bare" onclick={deleteItem} ></lightning-button-icon>
+        </div>
+    </div>
+</template>

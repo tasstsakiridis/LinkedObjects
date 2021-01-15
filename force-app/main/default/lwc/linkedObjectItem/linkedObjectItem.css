@@ -1,0 +1,11 @@
+.lo-summary-container {
+    background-color:  rgb(242, 242, 242);
+    border: 1px solid #d9d9d9;
+    border-radius: 5px;
+}
+.lo-container {
+    background-color:  white;
+    border: 1px solid #d9d9d9;
+    border-radius: 5px;
+    padding: 5px;
+}

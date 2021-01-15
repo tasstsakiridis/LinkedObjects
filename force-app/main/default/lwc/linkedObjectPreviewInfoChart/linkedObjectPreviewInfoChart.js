@@ -135,7 +135,7 @@ export default class LinkedObjectPreviewInfoChart extends LightningElement {
     get callbackHover() {
         return this._payload.onHover;
     }
-    set callbackHover() {
+    set callbackHover(value) {
         this._payload.onHover = value;
     }
 

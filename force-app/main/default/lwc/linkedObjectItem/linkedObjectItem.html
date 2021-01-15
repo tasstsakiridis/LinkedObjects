@@ -1,0 +1,219 @@
+<template>
+    <template if:false={isEditing}>
+        <div class="slds-grid slds-grow lo-summary-container">
+            <template if:true={isFilter}>
+                <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+                    {itemIndex}
+                </div>    
+            </template>
+            <div class="slds-col">
+                <lightning-tile label={title}  class="slds-p-around_x-small" style="background-color: white; min-height: 100%;">
+                    <div>
+                        <template if:true={isAction}>
+                            <template if:true={isFlow}>
+                                <span style="font-size: 8pt;">{subTitle}</span>
+                            </template>
+                            <template if:true={isApexClass}>
+                                <p style="font-size: 8pt;">{actionClassName}</p>
+                                <p style="font-size: 8pt;">{actionMethodName}</p>    
+                            </template>
+                        </template>
+                        <template if:false={isAction}>
+                            <span style="font-size: 8pt;">{subTitle}</span>
+                        </template>
+                    </div>
+                </lightning-tile>
+            </div>
+            <div class="slds-col slds-grow-none slds-p-around_small slds-align_absolute-center">
+                <lightning-button-icon icon-name="utility:edit" alternative-text="edit" title="edit" variant="bare" class="slds-m-right_x-small" onclick={editItem} ></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:delete" alternative-text="remove" title="remove" variant="bare" onclick={deleteItem} ></lightning-button-icon>
+            </div>
+        </div>
+    </template>
+    <template if:true={isEditing}>
+        <div class="lo-container">
+        <lightning-card>
+            <span slot="title">{title}</span>
+            <lightning-button-icon slot="actions" icon-name="utility:close" alternative-text="Cancel" title="close" variant="bare" onclick={closeFilter} ></lightning-button-icon>    
+    
+            <lightning-button-group slot="footer">
+                <lightning-button label="Apply" title="Apply" variant="brand" onclick={applyChanges} ></lightning-button>
+            </lightning-button-group>
+    
+            <template if:true={isWorking}>
+                <lightning-spinner alternative-text="loading" size="small" ></lightning-spinner>
+            </template>
+            <template if:true={isFilter}>
+                <div>                        
+                    <lightning-layout multiple-rows="true">
+                        <lightning-layout-item size="12">
+                            <lightning-radio-group label=""
+                                                    options={objectOptions}
+                                                    value={objectName}
+                                                    type="button"
+                                                    onchange={handleObjectChange}>
+                            </lightning-radio-group>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" class="slds-m-vertical_small">
+                            <div>
+                                <!--
+                                <template if:true={linkedObjectSelected}>
+                                    <lightning-combobox label={labels.field.label} value={fieldName}
+                                                        options={linkedObjectFields}
+                                                        onchange={handleFieldNameChange}>
+                                    </lightning-combobox>
+                                </template>
+                                <template if:false={linkedObjectSelected}>
+                                    <lightning-combobox label={labels.field.label} value={fieldName}
+                                                        options={sourceObjectFields}
+                                                        onchange={handleFieldNameChange}>
+                                    </lightning-combobox>                                    
+                                </template>
+                                -->
+                                <lightning-input label={labels.field.label} value={fieldName}
+                                                 onchange={handleFieldNameChange}>
+                                </lightning-input>
+                            </div>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" class="slds-m-vertical_small">
+                            <lightning-combobox label={labels.fieldType.label} value={fieldType}
+                                                options={fieldTypeOptions}
+                                                onchange={handleFieldTypeChange}>
+                            </lightning-combobox>                                                
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12">
+                            <div>
+                                <lightning-combobox name="operatorCombo" label={labels.operator.label} 
+                                                    value={operator} 
+                                                    options={operatorOptions}
+                                                    onchange={handleOperatorChange}>
+                                </lightning-combobox>
+                            </div>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" class="slds-m-vertical_small">
+                            <div>
+                                <template if:true={fieldTypeBoolean}>
+                                    <lightning-radio-group label={labels.value.label}
+                                                            value={fieldValue}
+                                                            options={booleanOptions}
+                                                            type="button"
+                                                            onchange={handleBooleanOptionChange}>
+                                    </lightning-radio-group>
+                                </template>
+                                <template if:true={fieldTypeDateTime}>
+                                    <lightning-input type="date" label={labels.value.label}
+                                                        value={fieldValue}
+                                                        onchange={handleFieldValueChange}>
+                                    </lightning-input>                                      
+                                </template>
+                                <template if:true={fieldTypeNumeric}>
+                                    <lightning-input type="number" label={labels.value.label}
+                                                        value={fieldValue}
+                                                        onchange={handleFieldValueChange}>
+                                    </lightning-input>                                      
+                                </template>
+                                <template if:true={fieldTypeText}>                                
+                                    <lightning-input type="text" label={labels.value.label}
+                                                        value={fieldValue}
+                                                        onchange={handleFieldValueChange}>
+                                    </lightning-input>                                      
+                                </template>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+            </template>
+    
+            <template if:true={isAction}>
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-input label={labels.actionLabel.label}
+                                        value={actionLabel}
+                                        onchange={handleActionLabelChange}>
+                        </lightning-input>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-radio-group name="actionObject"
+                                                label=''
+                                                options={objectOptions}
+                                                value={objectName}
+                                                type="button"
+                                                onchange={handleObjectChange}>
+                        </lightning-radio-group>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-radio-group name="actionType"
+                                                label={labels.actionType.label}
+                                                options={actionTypeOptions}
+                                                value={actionType}
+                                                type="button"
+                                                onchange={handleActionTypeChange}>
+                        </lightning-radio-group>
+                    </lightning-layout-item>
+                    <template if:true={isApexClass}>
+                        <lightning-layout-item size="12" padding="around-small">
+                            <lightning-input label={labels.className.label}
+                                                value={actionClassName}
+                                                onchange={handleActionClassNameChange}>
+                            </lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" padding="around-small">
+                            <lightning-input label={labels.methodName.label}
+                                                value={actionMethodName}
+                                                onchange={handleActionMethodNameChange}>
+                            </lightning-input>
+                        </lightning-layout-item>    
+                    </template>
+                    <template if:true={isFlow}>
+                        <lightning-layout-item size="12" padding="around-small">
+                            <lightning-input label={labels.flowName.label}
+                                                value={actionFlowName}
+                                                onchange={handleActionFlowNameChange}>
+                            </lightning-input>
+                        </lightning-layout-item>
+                    </template>
+                    <!--
+                    <lightning-layout-item size="12" padding="around-small">
+                        <c-linked-object-filter-list record-id={recordId} 
+                                                        bf-config={bfConfig}
+                                                        filters={actionFilters}
+                                                        filter-type="action"
+                                                        action={action}
+                                                        source-object={sourceObject} 
+                                                        source-object-info={sourceObjectInfo}
+                                                        linked-object={linkedObject}
+                                                        linked-object-info={linkedObjectInfo}
+                                                        can-edit-filters={canEditFilters}
+                                                        onsave={updateFilters}>
+                        </c-linked-object-filter-list>
+                    </lightning-layout-item>
+                -->
+                </lightning-layout>    
+            </template>
+    
+            <template if:true={isCounter}>
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-input label={labels.objectToCount.label}
+                                        value={objectToCount}
+                                        onchange={handleObjectToCountChange}>
+                        </lightning-input>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-input label={labels.field.label}
+                                        value={fieldName}
+                                        onchange={handleFieldNameChange}>
+                        </lightning-input>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-input label={labels.label.label}
+                                        value={counterLabel}
+                                        onchange={handleCounterLabelChange}>
+                        </lightning-input>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+        </lightning-card>       
+        </div> 
+    </template>
+</template>

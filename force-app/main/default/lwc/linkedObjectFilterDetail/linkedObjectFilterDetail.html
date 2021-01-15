@@ -10,7 +10,7 @@
         <template if:true={isWorking}>
             <lightning-spinner alternative-text="loading" size="small" ></lightning-spinner>
         </template>
-        <div>
+        <div>                        
             <lightning-layout multiple-rows="true">
                 <lightning-layout-item size="12">
                     <lightning-radio-group label=""
@@ -22,11 +22,10 @@
                 </lightning-layout-item>
                 <lightning-layout-item size="12" class="slds-m-vertical_small">
                     <div>
-                            <!--<input type="text" class="slds-input" value={fieldName} onchange={handleFieldNameChange} />-->
-                            <lightning-combobox label={labels.field.label} value={fieldName}
-                                                options={availableFields}
-                                                onchange={handleFieldNameChange}>
-                            </lightning-combobox>
+                        <lightning-combobox label={labels.field.label} value={fieldName}
+                                            options={availableFields}
+                                            onchange={handleFieldNameChange}>
+                        </lightning-combobox>
                     </div>
                 </lightning-layout-item>
                 <lightning-layout-item size="12">
@@ -70,31 +69,5 @@
                 </lightning-layout-item>
             </lightning-layout>
         </div>
-
-    </lightning-card>
-    
-    <!--
-    <c-linked-object-filter-modal class="fields-modal" onclick={hideDropdowns}>
-        <span slot="title">{object} fields</span>
-        <div slot="body">
-            <lightning-layout>
-                <lightning-layout-item size="8">
-                    <ul>
-                        <template for:each={fieldOptions} for:item="field">
-                            <li key={field.apiName} onclick={showFieldDetails}>{field.label}</li>
-                        </template>
-                    </ul>
-                </lightning-layout-item>
-                <lightning-layout-item size="4">
-                    <div class="slds-align_absolute-center">
-                        <p style="font-size: 14pt;">{selectedFieldLabel}</p>
-                        <p style="font-size: 12pt;">{selectedFieldApiName}</p>
-                        <p style="font-size: 10pt;">{selectedFieldType}</p>
-                        <lightning-button label={labels.select.label} class="slds-m-top_small" onclick={handleFieldSelected}></lightning-button>
-                    </div>
-                </lightning-layout-item>
-            </lightning-layout>
-        </div>
-    </c-linked-object-filter-modal>   
-    --> 
+    </lightning-card>    
 </template>

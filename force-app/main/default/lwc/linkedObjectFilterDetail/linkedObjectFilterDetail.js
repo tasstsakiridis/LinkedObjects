@@ -44,23 +44,26 @@ export default class LinkedObjectFilterDetail extends LightningElement {
         return this._filter;
     }
     set filter(value) {
-        this._filter = value;
-        if (value == undefined) {
-            this.title = labels.newFilter.label;
-            this.object = this.sourceObject;
-            this.fieldName = undefined;
-            this.fieldValue = undefined;
-            this.operator = 'equals';
-            this.setFieldType("text");
-        } else {
-            this.title = value.Name == undefined ? this.labels.newFilter.label : '';
-            this.object = value.Object__c;
-            this.fieldName = value.FieldName__c;
-            this.fieldValue = value.FieldValue__c;
-            this.operator = value.Operator__c;
+        try {
+            this._filter = value;
+            if (value == undefined) {
+                this.title = this.labels.newFilter.label;
+                this.object = this.sourceObject;
+                this.fieldName = undefined;
+                this.fieldValue = undefined;
+                this.operator = 'equals';
+                this.setFieldType("text");
+            } else {
+                this.title = value.Name == undefined ? this.labels.newFilter.label : '';
+                this.object = value.Object__c;
+                this.fieldName = value.FieldName__c;
+                this.fieldValue = value.FieldValue__c;
+                this.operator = value.Operator__c;
 
+            }
+        }catch(ex) {
+            console.log('[linkedObjectFilterDetail.setFilter] exception', ex);
         }
-
         console.log('[setFilter] filter', value);
         console.log('[setFilter] object, fieldname, fieldvalue, operator', this.object, this.fieldName, this.fieldValue, this.operator);
     }
@@ -76,6 +79,9 @@ export default class LinkedObjectFilterDetail extends LightningElement {
 
     @api 
     linkedObjectInfo;
+
+    @api 
+    filterType;
 
     selectedFieldApiName;
     selectedFieldValue;
@@ -104,31 +110,37 @@ export default class LinkedObjectFilterDetail extends LightningElement {
         return this._object;
     }
     set object(value) {
-        console.log('[set.object] value', value);
+        console.log('[linkedObjectFilterDetail.setObject] value', value);
+        console.log('[linkedObjectFilterDetail.setObject] sourceObjectInfo',this.sourceObjectInfo == undefined ? this.sourceObjectInfo : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
+        console.log('[linkedObjectFilterDetail.setObject] linkedObjectInfo',this.linkedObjectInfo == undefined ? this.linkedObjectInfo : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
         this.isWorking = true;
         this._object = value;
-        if (this.sourceObjectInfo != undefined && this.linkedObjectInfo != undefined) {
-            this.fieldOptions = this.sourceObjectInfo.data.fields;
-            if (value == this.linkedObject) {
-                this.fieldOptions = this.linkedObjectInfo.data.fields;
-            }
-            console.log('fieldOptions', this.fieldOptions);
-            
-            const flds = [];
-            Object.keys(this.fieldOptions).forEach(key => {
-                const fld = this.fieldOptions[key];
-                flds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
-            });
-            flds.sort(function(a, b) {
-                let x = a.label.toLowerCase();
-                let y = b.label.toLowerCase();
-                if (x < y) { return -1; }
-                if (x > y) { return 1; }
-                return 0; 
-            });
-            this.availableFields = [...flds];    
-            
-        }    
+        try {
+            if (this.sourceObjectInfo != undefined && this.linkedObjectInfo != undefined) {
+                this.fieldOptions = this.sourceObjectInfo.fields;
+                if (value == this.linkedObject) {
+                    this.fieldOptions = this.linkedObjectInfo.fields;
+                }
+                console.log('fieldOptions', this.fieldOptions);
+                /*
+                const flds = [];
+                Object.keys(this.fieldOptions).forEach(key => {
+                    const fld = this.fieldOptions[key];
+                    flds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
+                });
+                flds.sort(function(a, b) {
+                    let x = a.label.toLowerCase();
+                    let y = b.label.toLowerCase();
+                    if (x < y) { return -1; }
+                    if (x > y) { return 1; }
+                    return 0; 
+                });
+                this.availableFields = [...flds];    
+                */
+            }  
+        }catch(ex) {
+            console.log('[linkedObjectFilterDetail.setObject] exception', ex);
+        }  
         this.isWorking = false;    
     }
 
@@ -163,7 +175,7 @@ export default class LinkedObjectFilterDetail extends LightningElement {
                 }
             }
         }catch(ex) {
-            console.log('[handleFieldNameChange] exception', ex);
+            console.log('[linkedObjectFilterDetail.handleFieldNameChange] exception', ex);
         }
     }
 
@@ -174,15 +186,15 @@ export default class LinkedObjectFilterDetail extends LightningElement {
 
     connectedCallback() {
         if (this.sourceObjectInfo != undefined) {
-            this.objectOptions = [...this.objectOptions, {label: this.sourceObjectInfo.data.label, value: this.sourceObject}];
+            this.objectOptions = [...this.objectOptions, {label: this.sourceObjectInfo.label, value: this.sourceObject}];
         }
         if (this.linkedObjectInfo != undefined) {
-            this.objectOptions = [...this.objectOptions, {label: this.linkedObjectInfo.data.label, value: this.linkedObject}];
-        }
-        this.object = this.sourceObject;
-        this.fieldTypeText = true;
-        console.log('objectOptions', this.objectOptions);
-        console.log('sourceObject, linkedObject', this.sourceObject, this.linkedObject);
+            this.objectOptions = [...this.objectOptions, {label: this.linkedObjectInfo.label, value: this.linkedObject}];
+        } 
+        //this.object = this.sourceObject;
+        //this.fieldTypeText = true;
+        console.log('[linkedObjectFilterDetail.connectedCallback] objectOptions', this.objectOptions);
+        console.log('[linkedObjectFilterDetail.connectedCallback] sourceObject, linkedObject', this.sourceObject, this.linkedObject);
     }
 
     handleObjectChange(event) {

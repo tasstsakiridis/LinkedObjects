@@ -14,8 +14,12 @@
         <targetConfig targets="lightning__AppPage,lightning__RecordPage">
             <property name="recordId" type="String" label="Record Id"  default=""/>
             <property name="marketName" type="String" label="Market"  default=""/>
-            <property name="sourceObject" type="String" label="Source Object" datasource="Account,Promotion_Activity__c,Promotion__c" default="Account"/>
-            <property name="linkedObject" type="String" label="Linked Object" datasource="Account,Promotion_Activity__c,Promotion__c" default="Promotion_Activity__c"/>
+            <property name="sourceObject" type="String" label="Source Object" default="Account"/>
+            <property name="linkedObject" type="String" label="Linked Object" default="Promotion_Activity__c"/>
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+                <supportedFormFactor type="Small" />
+            </supportedFormFactors>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

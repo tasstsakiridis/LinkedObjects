@@ -6,7 +6,7 @@
                     <template if:true={counters.length}>
                         <lightning-menu-subheader label={labels.countby.label}></lightning-menu-subheader>
                         <template for:each={counters} for:item="counter">
-                            <lightning-menu-item key={counter.Id} value={counter.Name} label={counter.Counter_Label__c}></lightning-menu-item>
+                            <lightning-menu-item key={counter.id} value={counter.id} label={counter.counterLabel}></lightning-menu-item>
                         </template>        
                         <lightning-menu-subheader label={labels.fields.label}></lightning-menu-subheader>
                     </template>

@@ -8,3 +8,8 @@
     border: 1px solid #d9d9d9;
     border-radius: 5px;
 }
+.slds-popover.slds-popover_prompt {
+    position: absolute;
+    left: -80%;
+    top: 0;
+}

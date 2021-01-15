@@ -1,13 +1,19 @@
 import { LightningElement, api, wire } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import getDataForPreview from '@salesforce/apex/LinkedObjectConfig_Controller.getDataForPreview';
 import updateConfigFieldList from '@salesforce/apex/LinkedObjectConfig_Controller.updateConfigFieldList';
+import callAction from '@salesforce/apex/BF_CALL_CUSTOM_ACTION.callAction';
+
+import LABEL_ERROR from '@salesforce/label/c.Error';
+import LABEL_SUCCESS from '@salesforce/label/c.Success';
 
 const rowActions = [
     { label: 'Create Quick Promotion', name:"quick_promotion" }
 ];
 
 export default class LinkedObjectPreview extends LightningElement {
+
     @api 
     recordId;
     
@@ -15,19 +21,78 @@ export default class LinkedObjectPreview extends LightningElement {
     bfConfig;
 
     @api 
+    recordType;
+
+    _counters;
+    @api 
+    get counters() {
+        return this._counters;
+    }
+    set counters(value) {
+        this._counters = value;
+        console.log('[linkedObjectPreview.set counters] counters', value);
+    }
+
+    _actions;
+    @api 
+    get actions() {
+        return this._actions;
+    }
+    set actions(value) {
+        this._actions = value;
+        console.log('[linkedObjectPreview.set actions] actions', value);
+        if (value != undefined && value.length > 0) {
+            const actionsMap = value.map(a => {
+                return {
+                    label: a.actionLabel,
+                    name: a.id,
+                    value: a.id
+                }
+            });
+            this.availableActions = [...actionsMap];
+            console.log('[linkedObjectPreview.set actions] availableActions', JSON.parse(JSON.stringify(this.availableActions)));
+            if (this.linkedObjectColumns != undefined && this.linkedObjectColumns.length > 0) {
+                const actionsColumn = this.linkedObjectColumns.find(lc => lc.type == 'action');
+                if (actionsColumn == undefined) {
+                    const updatedColumns = this.linkedObjectColumns;
+                    updatedColumns.push({type: 'action', typeAttributes: { rowAction: this.availableActions }});
+                } else {
+                    actionsColumn.typeAttributes.rowAction = this.availableActions;
+                }
+            }
+        }
+    }
+
+    @api 
     linkedObjectConfigId;
+
+    @api 
+    sourceObject;
 
     @api 
     sourceObjectInfo;
 
-    _linkedObjectInfo;
+    @api 
+    sourceObjectFields;
 
+    @api 
+    linkedObject;
+
+    @api 
+    linkedObjectInfo;
+
+    @api 
+    linkedObjectFields;
+
+    /*
+    _linkedObjectInfo;
     @api 
     get linkedObjectInfo() {
         return this._linkedObjectInfo;
     }
     set linkedObjectInfo(value) {
         this._linkedObjectInfo = value;
+        console.log('[linkedObjectPreview.set linkedObjectInfo] value', value);
         if (value != undefined && value.data != undefined) {
             const flds = [];
             Object.keys(value.data.fields).forEach(key => {
@@ -44,6 +109,7 @@ export default class LinkedObjectPreview extends LightningElement {
             this.availableFields = [...flds];    
         }
     }
+    */
 
     isWorking = false;
 
@@ -54,23 +120,24 @@ export default class LinkedObjectPreview extends LightningElement {
         this.getData();
     }
     
+    connectedCallback() {
+        this.dispatchEvent(new CustomEvent('refreshready'));
+    }
+
     get sourceObjectLabelPlural() {
-        return this.sourceObjectInfo == undefined ? 'SOURCE' : this.sourceObjectInfo.data.labelPlural;
+        return this.sourceObjectInfo == undefined ? 'SOURCE' : this.sourceObjectInfo.labelPlural;
     }
     get linkedObjectLabelPlural() {
-        return this.linkedObjectInfo == undefined ? 'ROWS' : this.linkedObjectInfo.data.labelPlural;
+        return this.linkedObjectInfo == undefined ? 'ROWS' : this.linkedObjectInfo.labelPlural;
+    }
+    get isBFConfig() {
+        console.log('[linkedObjectPreview.isBFConfig] recordType', this.recordType);
+        return this.recordType == 'BF_Configuration__c';
+    }
+    get hasData() {
+        return (this.sourceObjectData != undefined && this.sourceObjectData.length > 0) || (this.linkedObjectData != undefined && this.linkedObjectData.length > 0);
     }
     
-    get counters() {
-        if (this.bfConfig == undefined || this.bfConfig.BF_Configuration_Items__r == undefined) {
-            return [];
-        } else {
-            console.log('[linkedObjectPreview.counters] this.bfConfig', JSON.parse(JSON.stringify(this.bfConfig)));
-            //const c = this.bfConfig.BF_Configuration_Items__r.filter(bfci => bfci.Is_Counter__c == true);
-            //console.log('[linkedObjectPreview.counters] counters', JSON.parse(JSON.stringify(c)));
-            return this.bfConfig.BF_Configuration_Items__r.filter(bfci => bfci.Is_Counter__c == true);
-        }
-    }
 
     selectedFields = [];
     availableFields = [];
@@ -79,9 +146,14 @@ export default class LinkedObjectPreview extends LightningElement {
     previewField1;
     previewField2;
 
+    availableActions = [];
+    selectedAction;
+
     error;
-    data;
-    columns;
+    sourceObjectData;
+    linkedObjectData;
+    sourceObjectColumns;
+    linkedObjectColumns;
     numberOfSourceObjectRows;
     numberOfLinkedObjectRows
     getData() {
@@ -92,27 +164,42 @@ export default class LinkedObjectPreview extends LightningElement {
             console.log('[linkedObjectPreview.getData] result', result);
             const fields = [];
             this.error = undefined;            
-            const newColumns = result.columns;
-            newColumns.forEach(c => {
+            if (this.isBFConfig) {
+                const newSourceObjectColumns = result.sourceObjectColumns;
+                newSourceObjectColumns.forEach(c => {
+                    if (c.fieldName == 'Name') {
+                        c.actions = [{label: 'Select fields', checked: true, name: 'selectFields', iconName: 'utility:list'}];
+                    }
+                });      
+                this.sourceObjectColumns = [...newSourceObjectColumns];
+            }
+
+            const newLinkedObjectColumns = result.linkedObjectColumns;
+            newLinkedObjectColumns.forEach(c => {
                 if (c.fieldName == 'Name') {
                     c.actions = [{label: 'Select fields', checked: true, name: 'selectFields', iconName: 'utility:list'}];
                 }
 
                 fields.push(c.fieldName);
             });  
-            newColumns.push({ type: 'action', typeAttributes: { rowActions: rowActions }});
-            this.columns = [...newColumns];
+            if (this.availableActions != undefined && this.availableActions.length > 0) {
+                newLinkedObjectColumns.push({ type: 'action', typeAttributes: { rowActions: this.availableActions }});
+            }
+
+            this.linkedObjectColumns = [...newLinkedObjectColumns];
             this.selectedFields = [...fields];  
             this.previewField1 = result.previewField1;
-            this.previewField2 = result.previewField2;    
-            this.data = result.linkedObjectRows;
+            this.previewField2 = result.previewField2; 
+            this.sourceObjectData = result.sourceObjectRows;   
+            this.linkedObjectData = result.linkedObjectRows;
             this.numberOfSourceObjectRows = result.sourceObjectRowCount;
             this.numberOfLinkedObjectRows = result.linkedObjectRowCount;
             this.isWorking = false;
         })
         .catch(error => {
             console.log('[linkedObjectPreview.getData] error', error);
-            this.data = undefined;
+            this.linkedObjectData = undefined;
+            this.sourceObjectData = undefined;
             this.error = error;
             this.isWorking = false;
         });
@@ -135,9 +222,10 @@ export default class LinkedObjectPreview extends LightningElement {
         this.selectedFields = event.detail.value;
     }
     applyFieldSelections() {
+        try {
         const newColumns = [];
         this.selectedFields.forEach(fld => {
-            const fdsr = this.linkedObjectInfo.data.fields[fld];
+            const fdsr = this.linkedObjectInfo.fields[fld];
             if (fdsr) {
                 newColumns.push({
                     'label': fdsr.label,
@@ -159,8 +247,11 @@ export default class LinkedObjectPreview extends LightningElement {
         if (this.previewField2 && this.previewField2 != '' && this.selectedFields.indexOf(this.previewField2) < 0) {
             this.previewField2 = '';
         }
+        console.log('[linkedObjectPreview.applyFieldSelections] selectedFields', this.selectedFields);
+        console.log('[linkedObjectPreview.applyFieldSelections] previewField1', this.previewField1);
+        console.log('[linkedObjectPreview.applyFieldSelections] previewField2', this.previewField2);
         updateConfigFieldList({configId: this.linkedObjectConfigId, 
-                                objectName: this.linkedObjectInfo.data.apiName, 
+                                objectName: this.linkedObjectInfo.apiName, 
                                 fieldList: this.selectedFields,
                                 previewField1: this.previewField1,
                                 previewField2: this.previewField2})
@@ -173,6 +264,9 @@ export default class LinkedObjectPreview extends LightningElement {
             this.error = error;
             this.isWorking = false;
         });
+        }catch(ex) {
+            console.log('[linkedObjectPreview.updateConfigFieldList] exception', ex);            
+        }
     }
 
     handleRowAction(event) {
@@ -188,23 +282,70 @@ export default class LinkedObjectPreview extends LightningElement {
 
     updatePreviewField(event) {
         console.log('[linkedObjectPreview.updatePreviewField] detail', JSON.parse(JSON.stringify(event.detail)));
-        if (event.detail.index == '1') {
-            this.previewField1 = event.detail.fieldName;
-        } else {
-            this.previewField2 = event.detail.fieldName;
+        try {
+            if (event.detail.index == '1') {
+                this.previewField1 = event.detail.fieldName;
+            } else {
+                this.previewField2 = event.detail.fieldName;
+            }
+            updateConfigFieldList({configId: this.linkedObjectConfigId, 
+                                    objectName: this.linkedObjectInfo.apiName,
+                                    fieldList: this.selectedFields,
+                                    previewField1: this.previewField1, 
+                                    previewField2: this.previewField2})
+            .then(result => {
+                console.log('[updatePreviewFields] result', result);
+            })
+            .catch(error => {
+                this.error = error;
+                console.log('[linkedObjectPreview.updatePreviewField] error', error);
+            });
+        }catch(ex) {
+            console.log('[linkedObjectPreview.updatePreviewField] exception', ex);
         }
-        updateConfigFieldList({configId: this.linkedObjectConfigId, 
-                                objectName: this.linkedObjectInfo.data.apiName,
-                                fieldList: this.selectedFields,
-                                previewField1: this.previewField1, 
-                                previewField2: this.previewField2})
-        .then(result => {
-            console.log('[updatePreviewFields] result', result);
-        })
-        .catch(error => {
-            this.error = error;
-            console.log('[linkedObjectPreview.updatePreviewField] error', error);
-        })
 
+    }
+
+    handleActionClick(event) {
+        this.isWorking = true;
+
+        this.selectedAction = this.actions.find(a => a.actionLabel == event.target.label);
+        console.log('[linkedObjectPreview.handleActionClick] action label', event.target.label);
+        console.log('[linkedObjectPreview.handleActionClick] selectedAction', this.selectedAction);
+
+        const linkedRecordIds = this.selectedRows.map(r => r.Id);
+        const inputs = {
+            'sourceObjectRecordId': this.recordId,
+            'linkedRecordIds' : linkedRecordIds
+        };
+        console.log('[linkedObjectPreview.handleActionClick] inputs', inputs);
+        callAction({
+            className: this.selectedAction.actionClassName,
+            actionName: this.selectedAction.actionMethodName,
+            actionType: this.selectedAction.actionType,
+            bfConfigId: this.bfConfigId,
+            inputs: JSON.stringify(inputs)
+        }).then(result => {
+            console.log('[linkedObjectPreview.callAction] result', result);
+            this.setSelectedRows = [];
+            this.isWorking = false;
+
+            const evt = new ShowToastEvent({
+                title: LABEL_SUCCESS,
+                message: result.message,
+                variant: 'success'
+            });
+            this.dispatchEvent(evt);
+        }).catch(error => {
+            this.isWorking = false;
+            console.log('[linkedObjectPreview.callAction] error', error);
+            const evt = new ShowToastEvent({
+                title: LABEL_ERROR,
+                message: result.message,
+                variant: 'error'
+            });
+            this.dispatchEvent(evt);
+
+        });
     }
 }

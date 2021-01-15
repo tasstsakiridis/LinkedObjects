@@ -6,11 +6,6 @@ import saveConfig from '@salesforce/apex/LinkedObjectConfig_Controller.saveConfi
 import LABEL_INSERT_SUGGESTED_FILTERS from '@salesforce/label/c.InsertSuggestedFilterCriteria';
 import LABEL_FILTERS from '@salesforce/label/c.Filters';
 
-const filters = [
-    { Object__c: 'Promotion_Activity__c', FieldName__c: 'Name', FieldValue__c: 'Test Spain Activity 3', Operator__c: 'equals', isEditing: false},
-    { Object__c: 'Account', FieldName__c: 'Channel__c', FieldValue__c: 'On', Operator__c: 'equals', isEditing: false },
-    { Object__c: 'Account', FieldName__c: 'RecordType', FieldValue__c: 'AUD - Outlet', Operator__c: 'equals', isEditing: false }
-];
 export default class LinkedObjectFilterList extends LightningElement {
     label = {
         filters: { label: LABEL_FILTERS }
@@ -37,25 +32,36 @@ export default class LinkedObjectFilterList extends LightningElement {
     @api 
     recordId;
 
+    @api 
+    filterType;
+
     _bfConfig;
     @api 
     get bfConfig() {
         return this._bfConfig;
     }
     set bfConfig(value) {
-        console.log('[linkedObjectFilterList.set bfConfig] value', value);
+        console.log('[linkedObjectFilterList.set bfConfig] value', value == undefined ? value : JSON.parse(JSON.stringify(value)));
         this._bfConfig = value;
+        /*
         if (value == undefined) {
             this.filters = [];
         } else {
             this.filters = [...value.BF_Configuration_Items__r.filter(f => f.Is_Filter__c)];            
         }
         console.log('[linkedObjectFilterList.set bfconfig] filters', this.filters);
+        */
         console.log('[linkedObjectFilterList.set bfConfig] linkedObjectInfo', this.linkedObjectInfo);
     }
 
-    @track
-    filters;
+    _filters = [];
+    @api 
+    get filters() {
+        return this._filters;
+    }
+    set filters(value) {
+        this._filters = value;
+    }
 
     filtersToDelete = [];
 
@@ -73,6 +79,7 @@ export default class LinkedObjectFilterList extends LightningElement {
     showFilterLogic = false;
 
     handleNewFilterSelect(event) {
+        console.log('[linkedObjectFilterList.handleNewFilterSelect] type', event.detail.value);
         if (event.detail.value == 'newfilter') {
             this.addNewFilter();
         } else if (event.detail.value == 'newfilterlogic') {
@@ -80,19 +87,25 @@ export default class LinkedObjectFilterList extends LightningElement {
         }
     }
     addNewFilter() {
-        console.log('sourceObjectInfo', JSON.stringify(this.sourceObjectInfo));
-        console.log('linkedObjectInfo', JSON.stringify(this.linkedObjectInfo));
-        this.filters = [
-            ...this.filters,
-            {
-                Id: '',
-                Object__c: this.sourceObject,
-                FieldName__c: '',
-                FieldValue__c: '',
-                Operator__c: 'equals',
-                isEditing: true    
-            }
-        ];
+        console.log('[linkedObjectFilterList.addNewFilter]');
+        try {
+            if (this.filters == undefined) { this.filters = []; }
+            this.filters = [
+                ...this.filters,
+                {
+                    Id: '',
+                    Object__c: this.sourceObject,
+                    FieldName__c: '',
+                    FieldValue__c: '',
+                    Operator__c: 'equals',
+                    isEditing: true    
+                }
+            ];
+        }catch(ex) {
+            console.log('[linkedObjectFilterList.addNewFilter] exception', ex);
+        }
+        console.log('[linkedObjectFilterList.addNewFilter] filters', this.filters);
+
     }
     addNewFilterLogic() {
         this.showFilterLogic = true;
@@ -126,7 +139,11 @@ export default class LinkedObjectFilterList extends LightningElement {
             console.log('[linkedObjectFilterList.removeFilter] filterToRemove', filterToRemove);
             console.log('[linkedObjectFilterList.removeFilter] filtersToDelete', this.filtersToDelete);
 
-            this.save();
+            if (this.filterType == 'action') {
+                this.dispatchEvent(new CustomEvent('save', { detail: this.filters }));
+            } else {
+                this.save();
+            }
         }catch(ex) {
             console.log('[linkedObjectFilterList.removeFilter] exception', ex);
         }
@@ -143,7 +160,11 @@ export default class LinkedObjectFilterList extends LightningElement {
             console.log('[linkedObjectFilterList.updateFilter] index', index);
             console.log('[linkedObjectFilterList.updateFilter] filters', JSON.stringify(this.filters));
 
-            this.save();
+            if (this.filterType == 'action') {
+                this.dispatchEvent(new CustomEvent('save', { detail: this.filters }));
+            } else {
+                this.save();
+            }
 
         }catch(ex) {
             console.log('[linkedObjectFilterList.updateFilter] exception', ex);

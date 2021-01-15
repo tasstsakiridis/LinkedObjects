@@ -1,0 +1,29 @@
+<template>
+    <div class="slds-hide lwc-popover" style="height:300px">
+        <section aria-describedby="popover-body-id-1" aria-labelledby="popover-heading-id-1" class="slds-popover slds-nubbin_right slds-popover_large" role="dialog">
+            <lightning-button-icon icon-name="utility:close" size="large" variant="bare-inverse" class="slds-modal__close"
+            onclick={hide}></lightning-button-icon>
+
+            <!-- Popover Header -->
+            <header class="slds-popover__header">
+                <h2 class="slds-text-heading_small slds-hyphenate" id="popover-heading-id-1">
+                    <slot name="title"></slot>
+                </h2>
+            </header>
+            <!-- /Popover Header -->
+
+            <!-- Popover Body -->
+            <div class="slds-popover__body" id="dialog-body-id-1">
+                <slot name="body"></slot>
+            </div>
+            <!-- /Popover Body -->
+
+            <!-- Popover Footer -->
+            <footer class="slds-popover__footer">
+                <lightning-button variant="neutral" label={labels.cancel.label} onclick={hide}></lightning-button>
+                <slot name="footer"></slot>
+            </footer>
+            <!-- /Popover Footer-->
+        </section>
+    </div>
+</template>
