@@ -7,6 +7,8 @@ import getConfigForRecord from '@salesforce/apex/LinkedObjectConfig_Controller.g
 import createConfigForRecord from '@salesforce/apex/LinkedObjectConfig_Controller.createConfigForRecord';
 import getRecordData from '@salesforce/apex/LinkedObjectConfig_Controller.getRecordData';
 import saveItemConfiguration from '@salesforce/apex/LinkedObjectConfig_Controller.saveItemConfiguration';
+import getUserDetail from '@salesforce/apex/LinkedObjectConfig_Controller.getUserDetail';
+import deleteItem from '@salesforce/apex/LinkedObjectConfig_Controller.deleteItem';
 
 import OBJECT_BF_CONFIG from '@salesforce/schema/BF_Configuration__c';
 
@@ -91,13 +93,14 @@ export default class LinkedObjectConfig extends LightningElement {
     */
     sourceObjectInfo;
     sourceObjectFields;
+    
     @wire(getObjectInfo, { objectApiName: '$sourceObject' })
     getSourceObjectInfo({error, data}) {
         console.log('[linkedObjectConfig.getSourceObjectInfo] data',data);
         console.log('[linkedObjectConfig.getSourceObjectInfo] error',error);
         if (data) {
             this.error = undefined;
-            this.sourceObjectInfo = data;
+            this.sourceObjectInfo = data;            
         } else if (error) {
             this.error = error;
             if (error.status == 400) {  // INVALID_TYPE - Object is not supported to give metadata describe info
@@ -117,31 +120,13 @@ export default class LinkedObjectConfig extends LightningElement {
             }
         }
 
-        if (this.sourceObjectInfo != undefined) {
-            const flds = [];
-            Object.keys(this.sourceObjectInfo.fields).forEach(key => {
-                const fld = this.sourceObjectInfo.fields[key];
-                //console.log('[linkedObjectConfig.sourceObjectInfo] fld for ' + key, fld);
-                if (fld) {
-                    flds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
-                }
-            });
-            flds.sort(function(a, b) {
-                let x = a.label.toLowerCase();
-                let y = b.label.toLowerCase();
-                if (x < y) { return -1; }
-                if (x > y) { return 1; }
-                return 0; 
-            });
-            this.sourceObjectFields = [...flds];
-
-        }
         console.log('[linkedObjectConfig.getSourceObjectInfo] sourceObjectInfo', this.sourceObjectInfo);
         //console.log('[linkedObjectConfig.getSourceObjectInfo] sourceObjectFields', this.sourceObjectFields);
     };
-
+    
     linkedObjectInfo;
     linkedObjectFields;
+    
     @wire(getObjectInfo, { objectApiName: '$linkedObject' })
     getLinkedObjectInfo({error, data}) {
         console.log('[linkedObjectConfig.getLinkedObjectInfo] data',data);
@@ -165,29 +150,9 @@ export default class LinkedObjectConfig extends LightningElement {
                 this.linkedObjectInfo = undefined;
             }
         }
-        if (this.linkedObjectInfo != undefined) {
-            const flds = [];
-            Object.keys(this.linkedObjectInfo.fields).forEach(key => {
-                const fld = this.linkedObjectInfo.fields[key];
-                //console.log('[linkedObjectConfig.sourceObjectInfo] fld for ' + key, fld);
-                if (fld) {
-                    flds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
-                }
-            });
-            flds.sort(function(a, b) {
-                let x = a.label.toLowerCase();
-                let y = b.label.toLowerCase();
-                if (x < y) { return -1; }
-                if (x > y) { return 1; }
-                return 0; 
-            });
-            this.linkedObjectFields = [...flds];
-
-        }
-
         console.log('[linkedObjectConfig.getLinkedObjectInfo] linkedObjectInfo', this.linkedObjectInfo);
     };
-
+    
     /*
     picklistValuesMap;
     @wire(getPicklistValuesByRecordType, { objectApiName: OBJECT_BF_CONFIG , recordTypeId: '$recordTypeId' })
@@ -215,12 +180,39 @@ export default class LinkedObjectConfig extends LightningElement {
     @track 
     counters;
 
+    @track
+    marketFilters;
+
+    @track
+    marketActions;
+
+    @track
+    marketCounters;
+
     bfConfig;
     bfConfigId;
     theRecord;
     theRecordType;
     hasConfig = false;
     
+    userDetails;
+    canCreateFilters = false;
+    isAdmin = false;
+    @wire(getUserDetail)
+    getWiredUsedDetail({data, error}) {
+        console.log('[linkedObjectConfig.getUserDetail] data', data);
+        if (data) {
+            this.userDetails = data.user;
+            this.isAdmin = data.isAdmin;
+            this.canCreateFilters = data.canCreateFilters || data.isAdmin;
+        } else if (error) {
+            this.error = error;
+            this.userDetails = undefined;
+            this.canCreateFilters = false;
+            this.isAdmin = false;
+        }
+    }
+
     @wire(getConfigForRecord, { recordId: '$recordId', type: 'Linked Objects'})
     getWiredConfigForRecord({data, error}) {
         console.log('[linkedObjectConfig.getConfigForRecord] data', data);
@@ -238,12 +230,15 @@ export default class LinkedObjectConfig extends LightningElement {
             }
             this.theRecord_SObjectType = data.theRecord_SObjectType;
             this.filters = data.filters;
+            this.marketFilters = data.marketFilters;
             this.counters = data.counters;
+            this.marketCounters = data.marketCounters;
             this.actions = data.actions;
+            this.marketActions = data.marketActions;
+            console.log('[linkedObjectConfig.getConfigForRecord] marketFilters, data.marketFilters', this.marketFilters, data.marketFilters);
             if (data.theRecord_SObjectType != 'BF_Configuration__c') {
                 this.getRecord(data.config == undefined);
             }
-            //this.refreshPreview({detail: data.config.Id});      
         } else if (error) {
             this.error = error;
             this.bfConfig = undefined;
@@ -312,10 +307,12 @@ export default class LinkedObjectConfig extends LightningElement {
             console.log('[linkedObjectConfig.createConfig] result',JSON.parse(JSON.stringify(result)));
             this.bfConfig = result.config;   
             this.bfConfigId = result.config.Id;   
-            if (result.filters != undefined) {
-                this.filters = result.filters;
-            }
-            console.log('[linkedObjectConfig.createConfig] id', result.config.Id);
+            this.marketFilters = [...result.marketFilters];
+            this.marketCounters = [...result.marketCounters];
+            this.marketActions = [...result.marketActions];
+            this.actions = [...result.actions];
+            this.filters = [...result.filters];
+            this.counters = [...result.counters];
             this.refreshPreview({detail: result.config.Id});          
         })
         .catch(error => {
@@ -368,6 +365,34 @@ export default class LinkedObjectConfig extends LightningElement {
         }));
     }
 
+    addExistingItem(event) {
+        console.log('[linkedObjectConfig.addExistingItem] event.detail',event.detail);        
+        const item = {...event.detail.item};
+        item.index = event.detail.index;
+        item.isEditing = false;
+
+        switch (event.detail.itemType) {
+            case 'Action':
+                const actions = [...this.actions];
+                actions.push(item);
+                this.actions = [...actions];
+                console.log('[linkedObjectConfig.addExistingItem] updated actions', JSON.parse(JSON.stringify(this.actions)));
+                break;
+
+            case 'Filter':
+                const filters = [...this.filters];
+                filters.push(item);
+                this.filters = [...filters];
+                break;
+
+            case 'Counter':
+                const counters = [...this.counters];
+                counters.push(item);
+                this.counters = [...counters];
+                break;
+        }
+
+    }
     addNewItem(event) {
         console.log('[linkedObjectConfig.addNewItem] event.detail',event.detail);        
         try {
@@ -465,6 +490,48 @@ export default class LinkedObjectConfig extends LightningElement {
     }
     deleteConfigItem(event) {
         console.log('[linkedObjectConfig.deleteConfigItem] event.detail',JSON.parse(JSON.stringify(event.detail)));
+        const item = event.detail.item;
+        if (item.id != '') {
+            deleteItem({itemId: item.id, itemType: item.itemType, index: item.index})
+            .then(result => {
+                this.removeItemFromList(result.itemId, result.itemType, result.index);
+            })
+            .catch(error => {
+                console.log('[linkedObjectConfig.deleteConfigItem] error', error);
+            });
+        } else {
+            this.removeItemFromList(item.id, item.itemType, item.index);
+        }
+    }
+    removeItemFromList(itemId, itemType, itemIndex) {
+        switch (itemType) {
+            case 'Action':                    
+                const actions = [...this.actions];
+                console.log('[linkedObjectConfig.deleteConfigItem] actions', actions);
+                actions.splice(itemIndex, 1);
+                this.actions = [...actions];
+                console.log('[linkedObjectConfig.deleteConfigItem] actions', JSON.parse(JSON.stringify(this.actions)));
+                break;
+
+            case 'Filter':
+                const filters = [...this.filters];
+                filters.splice(itemIndex, 1);
+                this.filters = [...filters];
+                if (itemId != '') {
+                    this.refreshPreview();
+                }
+                break;
+
+            case 'Counter':
+                const counters = [...this.counters];
+                counters.splice(itemIndex, 1);
+                this.counters = [...counters];
+                if (itemId != '') {
+                    this.refreshPreview();
+                }
+                break;
+        }   
+         
     }
     handleRefreshReady() {
         if (this.theRecord_SObjectType == 'BF_Configuration__c') {

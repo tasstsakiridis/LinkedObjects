@@ -1,131 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
-        <fullName>Action_Type</fullName>
-        <categories>labels</categories>
+        <fullName>NoPromotionsCreated</fullName>
+        <categories>messages</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Action Type</shortDescription>
-        <value>Action Type</value>
+        <shortDescription>NoPromotionsCreated</shortDescription>
+        <value>No Promotions created</value>
     </labels>
     <labels>
-        <fullName>Class_Name</fullName>
-        <categories>label</categories>
+        <fullName>PromotionsCreatedForActivity</fullName>
+        <categories>messages</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Class Name</shortDescription>
-        <value>Class Name</value>
-    </labels>
-    <labels>
-        <fullName>ClearList</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>ClearList</shortDescription>
-        <value>Clear list</value>
-    </labels>
-    <labels>
-        <fullName>Counters</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Counters</shortDescription>
-        <value>Counters</value>
-    </labels>
-    <labels>
-        <fullName>Field</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Field</shortDescription>
-        <value>Field</value>
-    </labels>
-    <labels>
-        <fullName>Field_Type</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Field Type</shortDescription>
-        <value>Field Type</value>
-    </labels>
-    <labels>
-        <fullName>Flow_Name</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Flow Name</shortDescription>
-        <value>Flow Name</value>
-    </labels>
-    <labels>
-        <fullName>InsertSuggestedFilterCriteria</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>InsertSuggestedFilterCriteria</shortDescription>
-        <value>Insert suggested filter criteria</value>
-    </labels>
-    <labels>
-        <fullName>Link</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Link</shortDescription>
-        <value>Link</value>
-    </labels>
-    <labels>
-        <fullName>Method_Name</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Method Name</shortDescription>
-        <value>Method Name</value>
-    </labels>
-    <labels>
-        <fullName>NewFilter</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>NewFilter</shortDescription>
-        <value>New Filter</value>
-    </labels>
-    <labels>
-        <fullName>Object</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Object</shortDescription>
-        <value>Object</value>
-    </labels>
-    <labels>
-        <fullName>Object_to_Count</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Object to Count</shortDescription>
-        <value>Object to Count</value>
-    </labels>
-    <labels>
-        <fullName>Operator</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Operator</shortDescription>
-        <value>Operator</value>
-    </labels>
-    <labels>
-        <fullName>Preview</fullName>
-        <categories>label</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Preview</shortDescription>
-        <value>Preview</value>
-    </labels>
-    <labels>
-        <fullName>Value</fullName>
-        <categories>labels</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Value</shortDescription>
-        <value>Value</value>
+        <shortDescription>PromotionsCreatedForActivity</shortDescription>
+        <value>Created %0 new promotion(s) for activity %1</value>
     </labels>
 </CustomLabels>

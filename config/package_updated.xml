@@ -91,6 +91,8 @@
         <members>Counters</members>
         <members>Field_Type</members>
         <members>Object_to_Count</members>
+        <members>NoPromotionsCreated</members>
+        <members>PromotionsCreatedForActivity</members>
     </types>
     <types>
         <name>ApexClass</name>

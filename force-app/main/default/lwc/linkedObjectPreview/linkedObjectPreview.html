@@ -61,34 +61,49 @@
                         </div>
                     </lightning-layout-item>
                     <lightning-layout-item padding="around-small" size="12">
+                        <template if:true={isBFConfig}>
+                            <lightning-card>
+                                <lightning-button-group slot="actions">
+                                    <template if:true={selectedSourceRows}>
+                                        <template if:true={selectedSourceRows.length}>
+                                            <!--<lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>-->
+                                            <template for:each={availableSourceActions} for:item="action">
+                                                <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand" class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                            </template>
+                                        </template>    
+                                    </template>
+                                    <lightning-button-icon icon-name="utility:list" onclick={selectSourceObjectFieldsToDisplay}></lightning-button-icon>
+                                </lightning-button-group>
+    
+                                <div class="preview-table">
+                                    <p class="slds-text-title_caps text-medium">{sourceObjectLabelPlural}</p>
+                                    <lightning-datatable key-field="Id"
+                                                        data={sourceObjectData}
+                                                        columns={sourceObjectColumns}>
+                                    </lightning-datatable>
+                                </div>    
+                            </lightning-card>
+                        </template>
                         <lightning-card>
                             <lightning-button-group slot="actions">
-                                <template if:true={selectedRows.length}>
-                                    <!--<lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>-->
-                                    <template for:each={availableActions} for:item="action">
-                                        <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand" class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                <template if:true={selectedRows}>
+                                    <template if:true={selectedRows.length}>
+                                        <!--<lightning-button label="Create Quick Promotion(s)" variant="brand" class="slds-m-right_small" onclick={createQuickPromotions}></lightning-button>-->
+                                        <template for:each={availableActions} for:item="action">
+                                            <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand" class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                        </template>
+                                        <!--
+                                        <lightning-radio-group name="actionsGroups"
+                                                                options={availableActions}
+                                                                value={selectedAction}
+                                                                type="button"
+                                                                onchange={handleActionButtonChange}>
+                                        </lightning-radio-group>
+                                    -->
                                     </template>
-                                    <!--
-                                    <lightning-radio-group name="actionsGroups"
-                                                            options={availableActions}
-                                                            value={selectedAction}
-                                                            type="button"
-                                                            onchange={handleActionButtonChange}>
-                                    </lightning-radio-group>
-                                -->
                                 </template>
-                                <lightning-button-icon icon-name="utility:list" onclick={selectFieldsToDisplay}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:list" onclick={selectLinkedObjectFieldsToDisplay}></lightning-button-icon>
                             </lightning-button-group>
-
-                            <template if:true={isBFConfig}>
-                            <div class="preview-table">
-                                <p class="slds-text-title_caps text-medium">{sourceObjectLabelPlural}</p>
-                                <lightning-datatable key-field="Id"
-                                                    data={sourceObjectData}
-                                                    columns={sourceObjectColumns}>
-                                </lightning-datatable>
-                            </div>
-                            </template>
 
                             <div class="preview-table">
                                 <template if:true={isBFConfig}>
@@ -122,7 +137,7 @@
                                     source-label="Available"
                                     selected-label="Selected"
                                     variant="label-hidden"
-                                    options={linkedObjectFields}
+                                    options={availableFields}
                                     value={selectedFields}
                                     onchange={handleFieldsChange}>
             </lightning-dual-listbox>

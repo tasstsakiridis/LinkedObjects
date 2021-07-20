@@ -3,12 +3,14 @@ import { LightningElement, api } from 'lwc';
 import saveItemConfiguration from '@salesforce/apex/LinkedObjectConfig_Controller.saveItemConfiguration';
 
 import LABEL_ACTIONS from '@salesforce/label/c.Actions';
+import LABEL_ADDNEW from '@salesforce/label/c.AddNew';
 import LABEL_COUNTERS from '@salesforce/label/c.Counters';
 import LABEL_INSERT_SUGGESTED_FILTERS from '@salesforce/label/c.InsertSuggestedFilterCriteria';
 import LABEL_FILTERS from '@salesforce/label/c.Filters';
 
 export default class LinkedObjectItemList extends LightningElement {
-    label = {
+    labels = {
+        addNew: { label: LABEL_ADDNEW },
         filters: { label: LABEL_FILTERS },
         actions: { label: LABEL_ACTIONS },
         counters: { label: LABEL_COUNTERS }
@@ -27,16 +29,10 @@ export default class LinkedObjectItemList extends LightningElement {
     sourceObjectInfo;
 
     @api 
-    sourceObjectFields;
-
-    @api 
     linkedObject;
 
     @api
     linkedObjectInfo;
-
-    @api 
-    linkedObjectFields;
 
     @api 
     market;
@@ -46,6 +42,12 @@ export default class LinkedObjectItemList extends LightningElement {
 
     @api 
     filterType;
+
+    @api 
+    isAdmin = false;
+
+    @api 
+    canCreateFilters = false;
 
     _bfConfig;
     @api 
@@ -66,17 +68,29 @@ export default class LinkedObjectItemList extends LightningElement {
         console.log('[linkedObjectItemList.set bfConfig] linkedObjectInfo', this.linkedObjectInfo);
     }
 
+    _items = [];
     @api 
-    items = [];
+    get items() {        
+        return this._items;
+    }
+    set items(value) {
+        console.log('[linkedObjectItemList.set items] value', value == undefined ? value : JSON.parse(JSON.stringify(value)));
+        this._items = value;
+    }
+
+    @api 
+    marketItems = [];
 
     itemsToDelete = [];
-    
+    isWorking = false;
+
     get hasItems() {
         return this.items == undefined || this.items.length == 0 ? false : true;
     }
 
     addNewItem() {
         console.log('[linkedObjectItemList.addNewItem] type', this.itemType);
+        console.log('[linkedObjectItemList.addNewItem] itemType', this.itemType);
         console.log('[linkedObjectItemList.addNewItem] sourceObject', this.sourceObject);
         console.log('[linkedObjectItemList.addNewItem] sourceObjectInfo', this.sourceObjectInfo);
         console.log('[linkedObjectItemList.addNewItem] linkedObject', this.linkedObject);
@@ -85,7 +99,7 @@ export default class LinkedObjectItemList extends LightningElement {
             this.dispatchEvent(new CustomEvent('addnewitem', { 
                 detail: {
                     itemType: this.itemType,
-                    index: this.items.length
+                    index: this.items == undefined ? 1 : this.items.length
                 }
             }));
             /*
@@ -101,6 +115,46 @@ export default class LinkedObjectItemList extends LightningElement {
         }
         //console.log('[linkedObjectItemList.addNewFilter] items', this.items);
         
+    }
+
+    handleMenuSelection(event) {
+        try {
+            const selectedButton = event.detail.value;
+            console.log('[linkedObjectItemList.handleMenuSelection] selectedButton', selectedButton);
+            switch (selectedButton) {
+                case 'addNew':
+                    this.addNewItem();
+                    break;
+
+                default:
+                    const marketItem = this.marketItems.find(mi => mi.id == selectedButton);
+                    console.log('[linkedObjectItemList.handleMenuSelection] marketItems', this.marketItems);
+                    console.log('[linkedObjectItemList.handleMenuSelection] marketItem', marketItem);
+                    this.dispatchEvent(new CustomEvent('addexistingitem', {
+                        detail: {
+                            itemType: this.itemType,
+                            index: this.items == undefined ? 1 : this.items.length,
+                            item: marketItem
+                        }
+                    }));
+            }
+        }catch(ex) {
+            console.log('[linkedObjectItemList.handleMenuSelection] exception', ex);
+        }
+    }
+
+    finishedLoading(event) {
+        this.items.forEach(i => {
+            if (i.id == event.detail) {
+
+            }
+        })
+    }
+
+    handleCancelEdit(event) {
+        if (event.detail.id == '') {
+            this.items.splice(event.detail.itemIndex, 1);
+        }
     }
 
     createNewItem() {

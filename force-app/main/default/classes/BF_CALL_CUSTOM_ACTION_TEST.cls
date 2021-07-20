@@ -6,7 +6,7 @@ public class BF_CALL_CUSTOM_ACTION_TEST {
         inputs.put('linkedObjectRecordIds', new List<String>());
 
         // Call Test Apex Class
-        Map<String, Object> result = BF_CALL_CUSTOM_ACTION.callAction('BF_CALL_ACTION_TESTCLASS', 'testCallAction', 'apex', '', JSON.serialize(inputs))
+        Map<String, Object> result = BF_CALL_CUSTOM_ACTION.callAction('BF_CALL_ACTION_TESTCLASS', 'testCallAction', 'apex', '', JSON.serialize(inputs));
         System.assertEquals('SUCCESS', String.valueOf(result.get('status')));
 
         // Call Test Flow

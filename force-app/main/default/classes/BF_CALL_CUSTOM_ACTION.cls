@@ -1,3 +1,6 @@
+/**
+ * Test Class:  BF_CALL_CUSTOM_ACTION_TEST
+ */
 public class BF_CALL_CUSTOM_ACTION {
     @AuraEnabled 
     public static Map<String, Object> callAction(String className, String actionName, String actionType, String bfConfigId, String inputs) {

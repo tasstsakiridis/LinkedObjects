@@ -23,6 +23,9 @@ export default class LinkedObjectPreview extends LightningElement {
     @api 
     recordType;
 
+    @api 
+    isAdmin = false;
+
     _counters;
     @api 
     get counters() {
@@ -69,20 +72,66 @@ export default class LinkedObjectPreview extends LightningElement {
     @api 
     sourceObject;
 
+    _sourceObjectInfo;
     @api 
-    sourceObjectInfo;
+    get sourceObjectInfo() {
+        return this._sourceObjectInfo;
+    }
+    set sourceObjectInfo(value) {
+        this._sourceObjectInfo = value;
+        const sourceflds = [];
+        if (value != undefined && value.fields != undefined) {
+            Object.keys(value.fields).forEach(key => {
+                const fld = value.fields[key];
+                if (fld) {
+                    sourceflds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
+                }
+            });
+    
+            sourceflds.sort(function(a, b) {
+                let x = a.label.toLowerCase();
+                let y = b.label.toLowerCase();
+                if (x < y) { return -1; }
+                if (x > y) { return 1; }
+                return 0; 
+            });    
+        }
+        this.sourceObjectFields = sourceflds;
+        console.log('[linkedObjectPreview.set sourceObjectInfo] sourceObjectFields', this.sourceObjectFields);            
 
-    @api 
-    sourceObjectFields;
+    }
 
     @api 
     linkedObject;
 
+    _linkedObjectInfo;
     @api 
-    linkedObjectInfo;
+    get linkedObjectInfo() {
+        return this._linkedObjectInfo;
+    }
+    set linkedObjectInfo(value) {
+        this._linkedObjectInfo = value;
+        const flds = [];
+        if (value != undefined && value.fields != undefined) {
+            Object.keys(value.fields).forEach(key => {
+                const fld = value.fields[key];
+                if (fld) {
+                    flds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
+                }
+            });
+    
+            flds.sort(function(a, b) {
+                let x = a.label.toLowerCase();
+                let y = b.label.toLowerCase();
+                if (x < y) { return -1; }
+                if (x > y) { return 1; }
+                return 0; 
+            });    
+        }
+        this.linkedObjectFields = flds;
+        console.log('[linkedObjectPreview.set linkedObjectInfo] linkedObjectFields', this.linkedObjectFields);            
+    }
 
-    @api 
-    linkedObjectFields;
 
     /*
     _linkedObjectInfo;
@@ -135,6 +184,8 @@ export default class LinkedObjectPreview extends LightningElement {
         return this.recordType == 'BF_Configuration__c';
     }
     get hasData() {
+        console.log('[linkedObjectPreview.hasData] sourceObjectData', this.sourceObjectData);
+        console.log('[linkedObjectPreview.hasData] linkedObjectData', this.linkedObjectData);
         return (this.sourceObjectData != undefined && this.sourceObjectData.length > 0) || (this.linkedObjectData != undefined && this.linkedObjectData.length > 0);
     }
     
@@ -142,9 +193,15 @@ export default class LinkedObjectPreview extends LightningElement {
     selectedFields = [];
     availableFields = [];
     originalSelectedFields = [];
+    sourceSelectedFields = [];
+    linkedSelectedFields = [];
+    linkedObjectFields = [];
+    sourceObjectFields = [];
     selectedRows = [];
     previewField1;
     previewField2;
+    selectingSourceFields = false;
+    selectingLinkedFields = false;
 
     availableActions = [];
     selectedAction;
@@ -162,32 +219,42 @@ export default class LinkedObjectPreview extends LightningElement {
         getDataForPreview({configId: this.linkedObjectConfigId})
         .then(result => {
             console.log('[linkedObjectPreview.getData] result', result);
-            const fields = [];
+            const sourceFields = [];
+            const linkedFields = [];
             this.error = undefined;            
             if (this.isBFConfig) {
-                const newSourceObjectColumns = result.sourceObjectColumns;
-                newSourceObjectColumns.forEach(c => {
+                if (result.sourceObjectColumns != undefined) {
+                    const newSourceObjectColumns = result.sourceObjectColumns;
+                    newSourceObjectColumns.forEach(c => {
+                        if (c.fieldName == 'Name') {
+                            c.actions = [{label: 'Select fields', checked: true, name: 'selectFields', iconName: 'utility:list'}];
+                        }
+                    });      
+                    this.sourceObjectColumns = [...newSourceObjectColumns];
+                    sourceFields.push(c.fieldName);    
+                }
+            }
+
+            if (result.linkedObjectColumns != undefined) {
+                const newLinkedObjectColumns = result.linkedObjectColumns;
+                newLinkedObjectColumns.forEach(c => {
                     if (c.fieldName == 'Name') {
                         c.actions = [{label: 'Select fields', checked: true, name: 'selectFields', iconName: 'utility:list'}];
                     }
-                });      
-                this.sourceObjectColumns = [...newSourceObjectColumns];
-            }
-
-            const newLinkedObjectColumns = result.linkedObjectColumns;
-            newLinkedObjectColumns.forEach(c => {
-                if (c.fieldName == 'Name') {
-                    c.actions = [{label: 'Select fields', checked: true, name: 'selectFields', iconName: 'utility:list'}];
+    
+                    linkedFields.push(c.fieldName);
+                });  
+                if (this.availableActions != undefined && this.availableActions.length > 0) {
+                    newLinkedObjectColumns.push({ type: 'action', typeAttributes: { rowActions: this.availableActions }});
                 }
-
-                fields.push(c.fieldName);
-            });  
-            if (this.availableActions != undefined && this.availableActions.length > 0) {
-                newLinkedObjectColumns.push({ type: 'action', typeAttributes: { rowActions: this.availableActions }});
+    
+                this.linkedObjectColumns = [...newLinkedObjectColumns];    
             }
 
-            this.linkedObjectColumns = [...newLinkedObjectColumns];
-            this.selectedFields = [...fields];  
+            this.linkedSelectedFields = [...linkedFields];  
+            this.sourceSelectedFields = [...sourceFields];
+            console.log('[linkedObjectPreview.getdata] linkedSelectedFields', this.linkedSelectedFields);
+            console.log('[linkedObjectPreview.getdata] sourceSelectedFields', this.sourceSelectedFields);
             this.previewField1 = result.previewField1;
             this.previewField2 = result.previewField2; 
             this.sourceObjectData = result.sourceObjectRows;   
@@ -205,10 +272,25 @@ export default class LinkedObjectPreview extends LightningElement {
         });
     }
 
-    selectFieldsToDisplay(event) {
+    selectSourceObjectFieldsToDisplay(event) {
         try {
-            console.log('[linkedObjectPreview.selectFields]');
-            this.originalSelectedFields = [...this.selectedFields];
+            console.log('[linkedObjectPreview.selectFields] selectedFields', this.sourceObjectFields);     
+            this.selectingSourceFields = true;       
+            this.selectingLinkedFields = false;       
+            this.availableFields = [...this.sourceObjectFields];
+            this.selectedFields = [...this.sourceSelectedFields];
+            this.template.querySelector('.field-selector').show();
+        }catch(ex) {
+            console.log('[linkedObjectPreview.selectFields] exception', ex);
+        }
+    }
+    selectLinkedObjectFieldsToDisplay(event) {
+        try {
+            console.log('[linkedObjectPreview.selectFields] selectedFields', this.linkedObjectFields);            
+            this.selectingLinkedFields = true;       
+            this.selectingSourceFields = false;       
+            this.availableFields = [...this.linkedObjectFields];
+            this.selectedFields = [...this.linkedSelectedFields];            
             this.template.querySelector('.field-selector').show();
         }catch(ex) {
             console.log('[linkedObjectPreview.selectFields] exception', ex);
@@ -218,52 +300,59 @@ export default class LinkedObjectPreview extends LightningElement {
         this.template.querySelector('.field-selector').hide();
         this.selectedFields = [...this.originalSelectedFields];
     }
-    handleFieldsChange(event) {
+    handleFieldsChange(event) { 
         this.selectedFields = event.detail.value;
+        console.log('[linkedObjectPreview.handleFieldsChange] selectedFields', this.selectedFields);
     }
     applyFieldSelections() {
         try {
-        const newColumns = [];
-        this.selectedFields.forEach(fld => {
-            const fdsr = this.linkedObjectInfo.fields[fld];
-            if (fdsr) {
-                newColumns.push({
-                    'label': fdsr.label,
-                    'fieldName': fdsr.apiName,
-                    'type': fdsr.type,
-                    'sortable': true,
-                    'hideDefaultActions': true
-                });    
+            if (this.selectingSourceFields) {
+                this.selectedSourceFields = [...this.selectedFields];
+            } else {
+                this.selectedLinkedFields = [...this.selectedFields];
             }
-        });
-        newColumns.push({ type: 'action', typeAttributes: { rowActions: rowActions }});
-        this.columns = [...newColumns];
-        this.template.querySelector('.field-selector').hide();
-        this.isWorking = true;
-        console.log('[linkedObjectPreview.applyFieldSelections] columns', this.columns);
-        if (this.previewField1 && this.previewField1 != '' && this.selectedFields.indexOf(this.previewField1) < 0) {
-            this.previewField1 = '';
-        }
-        if (this.previewField2 && this.previewField2 != '' && this.selectedFields.indexOf(this.previewField2) < 0) {
-            this.previewField2 = '';
-        }
-        console.log('[linkedObjectPreview.applyFieldSelections] selectedFields', this.selectedFields);
-        console.log('[linkedObjectPreview.applyFieldSelections] previewField1', this.previewField1);
-        console.log('[linkedObjectPreview.applyFieldSelections] previewField2', this.previewField2);
-        updateConfigFieldList({configId: this.linkedObjectConfigId, 
-                                objectName: this.linkedObjectInfo.apiName, 
-                                fieldList: this.selectedFields,
-                                previewField1: this.previewField1,
-                                previewField2: this.previewField2})
-        .then(result => {
-            console.log('[linkedObjectPreview.updateConfigFieldList] result', result);
-            this.getData();
-        })
-        .catch(error => {
-            console.log('[linkedObjectPreview.updateConfigFieldList] error', error);
-            this.error = error;
-            this.isWorking = false;
-        });
+
+            const newColumns = [];
+            this.selectedFields.forEach(fld => {
+                const fdsr = this.linkedObjectInfo.fields[fld];
+                if (fdsr) {
+                    newColumns.push({
+                        'label': fdsr.label,
+                        'fieldName': fdsr.apiName,
+                        'type': fdsr.type,
+                        'sortable': true,
+                        'hideDefaultActions': true
+                    });    
+                }
+            });
+            newColumns.push({ type: 'action', typeAttributes: { rowActions: rowActions }});
+            this.columns = [...newColumns];
+            this.template.querySelector('.field-selector').hide();
+            this.isWorking = true;
+            console.log('[linkedObjectPreview.applyFieldSelections] columns', this.columns);
+            if (this.previewField1 && this.previewField1 != '' && this.selectedFields.indexOf(this.previewField1) < 0) {
+                this.previewField1 = '';
+            }
+            if (this.previewField2 && this.previewField2 != '' && this.selectedFields.indexOf(this.previewField2) < 0) {
+                this.previewField2 = '';
+            }
+            console.log('[linkedObjectPreview.applyFieldSelections] selectedFields', this.selectedFields);
+            console.log('[linkedObjectPreview.applyFieldSelections] previewField1', this.previewField1);
+            console.log('[linkedObjectPreview.applyFieldSelections] previewField2', this.previewField2);
+            updateConfigFieldList({configId: this.linkedObjectConfigId, 
+                                    objectName: this.selectingLinkedFields ? this.linkedObjectInfo.apiName : this.sourceObjectInfo.apiName, 
+                                    fieldList: this.selectedFields,
+                                    previewField1: this.previewField1,
+                                    previewField2: this.previewField2})
+            .then(result => {
+                console.log('[linkedObjectPreview.updateConfigFieldList] result', result);
+                this.getData();
+            })
+            .catch(error => {
+                console.log('[linkedObjectPreview.updateConfigFieldList] error', error);
+                this.error = error;
+                this.isWorking = false;
+            });
         }catch(ex) {
             console.log('[linkedObjectPreview.updateConfigFieldList] exception', ex);            
         }

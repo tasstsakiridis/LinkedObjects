@@ -1,12 +1,21 @@
 <template>
     <lightning-card>
         <span slot="title">{title}</span>
-        <lightning-button-icon slot="actions" icon-name="utility:add" alternative-text="Add" onclick={addNewItem} class="slds-m-left_medium"></lightning-button-icon>
+        <template if:true={canCreateFilters}>
+            <lightning-button-menu slot="actions" icon-name="utility:add" alternative-text="Add" variant="border-filled" class="slds-m-left_medium" onselect={handleMenuSelection}>
+                <lightning-menu-item label={labels.addNew.label} value="addNew"></lightning-menu-item>
+                <lightning-menu-divider></lightning-menu-divider>
+                <template for:each={marketItems} for:item="mi">
+                    <lightning-menu-item key={mi.id} label={mi.label} value={mi.id}></lightning-menu-item>
+                </template>
+            </lightning-button-menu>
+            <!--<lightning-button-icon slot="actions" icon-name="utility:add" alternative-text="Add" onclick={addNewItem} class="slds-m-left_medium"></lightning-button-icon>-->
+        </template>
 
         <template if:true={isWorking}>
             <lightning-spinner alternative-text="loading" size="small" ></lightning-spinner>
         </template>
-        <div class="slds-p-around_small">
+        <div class="slds-p-vertical_small">
             <ul class="bottom-space">
                 <template for:each={items} for:item="item" for:index="index">
                     <li key={item.Id} class="slds-item slds-p-vertical_xx-small">
@@ -14,12 +23,11 @@
                                                 bf-config={bfConfig}
                                                 source-object={sourceObject}
                                                 source-object-info={sourceObjectInfo}
-                                                source-object-fields={sourceObjectFields}
                                                 linked-object={linkedObject}
                                                 linked-object-info={linkedObjectInfo}
-                                                linked-object-fields={linkedObjectFields}
                                                 item={item} 
-                                                can-edit={canEdit}>
+                                                can-edit={canEdit}
+                                                oncancel={handleCancelEdit}>
                         </c-linked-object-item>
                     </li>
                 </template>

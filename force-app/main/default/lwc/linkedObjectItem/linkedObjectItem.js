@@ -96,6 +96,9 @@ export default class LinkedObjectItem extends LightningElement {
             this.actionMethodName = value.actionMethodName;
             this.actionFlowName = value.actionFlowName;
             this.objectToCount = value.objectToCount;    
+            this.filterType = value.filterType;
+            this.referencedObject = value.referencedObject;
+            this.referencedField = value.referencedField;
         }
     }
 
@@ -111,8 +114,6 @@ export default class LinkedObjectItem extends LightningElement {
     @api 
     sourceObjectInfo;
 
-    @api 
-    sourceObjectFields;
 
     @api 
     linkedObject;
@@ -120,7 +121,7 @@ export default class LinkedObjectItem extends LightningElement {
     @api
     linkedObjectInfo;
 
-    @api 
+    sourceObjectFields;
     linkedObjectFields;
 
     @api 
@@ -132,7 +133,6 @@ export default class LinkedObjectItem extends LightningElement {
     selectedFieldApiName;
     selectedFieldValue;
     selectedFieldType;
-
 
     fieldOptions;
     fieldPicklistValues;
@@ -149,6 +149,9 @@ export default class LinkedObjectItem extends LightningElement {
     fieldTypeBoolean = false;
     fieldTypeText = true;
     fieldTypeNumeric = false;
+    filterType = 'Value';
+    referencedObject = '';
+    referencedField = '';
     counterLabel = '';
 
     get isAction() {
@@ -191,7 +194,11 @@ export default class LinkedObjectItem extends LightningElement {
                 break;
 
             case 'Filter':
-                _subtitle = `${this.operator}  ${this.fieldValue}`;
+                if (this.filterType == 'Value') {
+                    _subtitle = `${this.operator}  ${this.fieldValue}`;
+                } else {
+                    _subtitle = `${this.operator}  ${this.referencedObject}.${this.referencedField}`;
+                }
                 break;
 
         }
@@ -217,6 +224,15 @@ export default class LinkedObjectItem extends LightningElement {
             this.linkedObjectSelected = false;
         }
         try {
+            console.log('[linkedObjectItem.objectName] sourceObjectFields', this.sourceObjectFields);
+            console.log('[linkedObjectItem.objectName] linkedObjectFields', this.linkedObjectFields);
+            if (this.isFilter) {
+                if (this.sourceObject == value) {
+                    this.availableFields = [...this.sourceObjectFields];
+                } else {
+                    this.availableFields = [...this.linkedObjectFields];
+                }    
+            }
             //if (this.sourceObjectInfo != undefined && this.linkedObjectInfo != undefined) {
                 /*
                 this.fieldOptions = this.sourceObjectInfo.fields;
@@ -258,7 +274,7 @@ export default class LinkedObjectItem extends LightningElement {
         }
     }
 
-    /*
+    
     _fieldName;
     @api 
     get fieldName() {
@@ -267,16 +283,22 @@ export default class LinkedObjectItem extends LightningElement {
     set fieldName(value) {
         try {
             this._fieldName = value;
-            if (this.availableFields != undefined) {
-                const fld = this.availableFields[value];
+            console.log('[linkedObjectItem.set fieldName] value', value);
+            if (value != undefined && this.availableFields != undefined) {
+                const fld = this.objectName == this.sourceObject ? this.sourceObjectInfo.fields[value] : this.linkedObjectInfo.fields[value];
                 console.log('fld', JSON.stringify(fld));
                 console.log('datatype', fld.dataType);
                 switch(fld.dataType) {
                     case "Boolean":
-                        this.setFieldType("boolean");
+                        this.setFieldType("bool");
                         if (this.fieldValue == undefined || this.fieldValue == '') { this.fieldValue = 'true'; }
                         break;
 
+                    case "Date":
+                    case "DateTime":
+                        this.setFieldType("date");
+                        break;
+                        
                     case "Currency":
                     case "Double":
                     case "Int":
@@ -290,10 +312,10 @@ export default class LinkedObjectItem extends LightningElement {
                 }
             }
         }catch(ex) {
-            console.log('[linkedObjectFilterDetail.handleFieldNameChange] exception', ex);
+            console.log('[linkedObjectItem.handleFieldNameChange] exception', ex);
         }
     }
-    */
+    
 
     _actionType = 'apex';
     @api 
@@ -313,20 +335,83 @@ export default class LinkedObjectItem extends LightningElement {
 
     objectOptions = [];    
     showBooleanValues = false;
-
+    relatedObjects = new Map();
 
     connectedCallback() {
         console.log('[linkedObjectItem.connectedCallback] sourceObject, linkedObject', this.sourceObject, this.linkedObject);
         console.log('[linkedObjectItem.connectedCallback] sourceObjectInfo', this.sourceObjectInfo == undefined ? 'undefined' : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
         console.log('[linkedObjectItem.connectedCallback] linkedObjectInfo', this.linkedObjectInfo == undefined ? 'undefined' : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
         let options = [];
+        let relatedObjectAPINames = [];
+        this.relatedObjects.clear();
+
+
         if (this.sourceObjectInfo != undefined) {
             options.push({label: this.sourceObjectInfo.label, value: this.sourceObject});
+            
+            const sourceflds = [];
+            Object.keys(this.sourceObjectInfo.fields).forEach(key => {
+                const fld = this.sourceObjectInfo.fields[key];
+                //console.log('[linkedObjectItem.connectedCallback] fld for ' + key, fld);
+                if (fld) {
+                    sourceflds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
+                }
+            });
+            if (this.sourceObjectInfo.childRelationships) {
+                this.sourceObjectInfo.childRelationships.forEach(cr => {
+                    console.log('[linkedObjectItem.connectedCallback] sourceObjectInfo.childrelations', cr);
+                    if (!this.relatedObjects.has(cr.relationshipName)) {
+                        this.relatedObjects.set(cr.relationshipName, cr);
+                        relatedObjectAPINames.push({ label: cr.childObjectApiName, value: cr.relationshipName });
+                    }
+                });                
+            }
+
+            sourceflds.sort(function(a, b) {
+                let x = a.label.toLowerCase();
+                let y = b.label.toLowerCase();
+                if (x < y) { return -1; }
+                if (x > y) { return 1; }
+                return 0; 
+            });
+            this.sourceObjectFields = sourceflds;
+            
         }
         if (this.linkedObjectInfo != undefined) {
             options.push({label: this.linkedObjectInfo.label, value: this.linkedObject});
+            
+            const linkedflds = [];
+            console.log('linkedObjectInfo.fields keys', Object.keys(this.linkedObjectInfo.fields));
+            Object.keys(this.linkedObjectInfo.fields).forEach(key => {
+                const fld = this.linkedObjectInfo.fields[key];
+                //console.log('[linkedObjectFilterDetail.setObject] fld for ' + key, fld);
+                if (fld) {
+                    linkedflds.push({label:fld.label + ' ['+fld.apiName+']', value: fld.apiName, apiName: fld.apiName, type: fld.dataType});
+                }
+            });
+            console.log('linkedObjectInfo.childRelationships', this.linkedObjectInfo.childRelationships);
+            if (this.linkedObjectInfo.childRelationships) {
+                this.linkedObjectInfo.childRelationships.forEach(cr => {
+                    if (!this.relatedObjects.has(cr.childObjectApiName)) {
+                        this.relatedObjects.set(cr.childObjectApiName, cr);
+                        relatedObjectAPINames.push({ label: cr.childObjectApiName, value: cr.childObjectApiName });
+                    }
+                });
+            }
+            linkedflds.sort(function(a, b) {
+                let x = a.label.toLowerCase();
+                let y = b.label.toLowerCase();
+                if (x < y) { return -1; }
+                if (x > y) { return 1; }
+                return 0; 
+            });
+            this.linkedObjectFields = linkedflds;
+            
         } 
+        
         this.objectOptions = [...options];
+        this.availableFields = this.sourceObjectFields;
+        this.relatedObjectList = [...relatedObjectAPINames];
         //this.object = this.sourceObject;
         //this.fieldTypeText = true;
         console.log('[linkedObjectItem.connectedCallback] objectOptions', this.objectOptions);
@@ -351,14 +436,14 @@ export default class LinkedObjectItem extends LightningElement {
     handleBooleanOptionChange(event) {
         this.fieldValue = event.detail.value;
     }    
-    setFieldType() {
+    setFieldType(fieldType) {
         
         this.fieldTypeDateTime = false;
         this.fieldTypeBoolean = false;
         this.fieldTypeText = false;
         this.fieldTypeNumeric = false;
 
-        switch(this.fieldType) {
+        switch(fieldType) {
             case "date":
                 this.fieldTypeDateTime = true;
                 this.operatorOptions = [...operators.filter(o => o.type.indexOf('date') > -1)];
@@ -399,13 +484,18 @@ export default class LinkedObjectItem extends LightningElement {
     }
     handleObjectToCountChange(event) {
         this.objectToCount = event.detail.value;
+        const objectToCountDetails = this.relatedObjects.get(this.objectToCount);
+        this.fieldName = objectToCountDetails.fieldName;        
     }
     handleCounterLabelChange(event) {
         this.counterLabel = event.detail.value;
     }
 
-    closeFilter() {
-        this.dispatchEvent(new CustomEvent('cancel'));
+    closeItem() {
+        this.isEditing = false;
+        if (this.item.id == '') {
+            this.deleteItem();
+        }
     }
     applyChanges() {
         console.log('[linkedObjectItem.applyChanges]');
@@ -451,6 +541,7 @@ export default class LinkedObjectItem extends LightningElement {
     deleteItem() {
         this.dispatchEvent(new CustomEvent('delete', { 
             bubbles: true, 
+            composed: true,
             detail: {
                 index: this.item.itemIndex,
                 item: this.item
@@ -458,13 +549,4 @@ export default class LinkedObjectItem extends LightningElement {
         }));
     }
 
-    updateItem(event) {
-        // dispatch 'save' event
-        console.log('[linkedObjectItem.updateItem] event', JSON.parse(JSON.stringify(event.detail)));
-        this.dispatchEvent(new CustomEvent('update', { detail: event.detail }));
-    }
-
-    cancelUpdate(event) {
-        this.isEditing = false;
-    }
 }

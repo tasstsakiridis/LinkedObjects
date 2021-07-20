@@ -14,26 +14,29 @@
                                                     bf-config={bfConfig}
                                                     counters={counters}
                                                     actions={actions}
+                                                    is-admin={isAdmin}
                                                     source-object={sourceObject}
                                                     source-object-info={sourceObjectInfo}
-                                                    source-object-fields={sourceObjectFields}
                                                     linked-object={linkedObject}
                                                     linked-object-info={linkedObjectInfo}
-                                                    linked-object-fields={linkedObjectFields}
                                                     linked-object-config-id={bfConfigId}
                                                     record-type={theRecord_SObjectType}
                                                     onrefreshready={handleRefreshReady}>
                             </c-linked-object-preview>
+                        
                     </lightning-layout-item>
                     <lightning-layout-item size="3" padding="around-small" class="slds-border_left border-shadow">
                         <lightning-tabset variant="scoped">
-                            <lightning-tab label={labels.actions.label}>
+                            <lightning-tab label={labels.actions.label}>                                
                                 <c-linked-object-item-list record-id={recordId}
                                                             title={labels.actions.label}
                                                             item-type="Action"
                                                             bf-config={bfConfig}
+                                                            is-admin={isAdmin}
+                                                            can-create-filters={canCreateFilters}
                                                             market={marketId}
                                                             items={actions}
+                                                            market-items={marketActions}
                                                             source-object={sourceObject}
                                                             source-object-info={sourceObjectInfo}
                                                             source-object-fields={sourceObjectFields}
@@ -42,17 +45,21 @@
                                                             linked-object-fields={linkedObjectFields}
                                                             can-edit-actions={canEditActions}
                                                             onaddnewitem={addNewItem}
+                                                            onaddexistingitem={addExistingItem}
                                                             onupdate={updateConfigItem}
                                                             ondelete={deleteConfigItem} >
                                 </c-linked-object-item-list>
-                                                            
                             </lightning-tab>
                             <lightning-tab label={labels.filters.label}>
+                                
                                 <c-linked-object-item-list record-id={recordId} 
                                                             title={labels.filters.label}
                                                             item-type="Filter"
                                                             bf-config={bfConfig}
+                                                            is-admin={isAdmin}
+                                                            can-create-filters={canCreateFilters}
                                                             items={filters}
+                                                            market-items={marketFilters}
                                                             market={marketId}
                                                             filter-logic={filterLogic}
                                                             source-object={sourceObject} 
@@ -63,32 +70,35 @@
                                                             linked-object-fields={linkedObjectFields}
                                                             can-edit-filters={canEditFilters}
                                                             onaddnewitem={addNewItem}
+                                                            onaddexistingitem={addExistingItem}
                                                             onupdate={updateConfigItem}
                                                             ondelete={deleteConfigItem}
                                                             onrefresh={refreshPreview}>
                                 </c-linked-object-item-list>
-
+                        
                             </lightning-tab>
                             <lightning-tab label={labels.counters.label}>
                                 <c-linked-object-item-list record-id={recordId} 
                                                             title={labels.counters.label}
                                                             item-type="Counter"
                                                             bf-config={bfConfig}
+                                                            is-admin={isAdmin}
+                                                            can-create-filters={canCreateFilters}
                                                             items={counters}
+                                                            market-items={marketCounters}
                                                             market={marketId}
                                                             filter-logic={filterLogic}
                                                             source-object={sourceObject} 
                                                             source-object-info={sourceObjectInfo}
-                                                            source-object-fields={sourceObjectFields}
                                                             linked-object={linkedObject}
                                                             linked-object-info={linkedObjectInfo}
-                                                            linked-object-fields={linkedObjectFields}
                                                             can-edit-filters={canEditFilters}
                                                             onaddnewitem={addNewItem}
+                                                            onaddexistingitem={addExistingItem}
                                                             onupdate={updateConfigItem}
                                                             ondelete={deleteConfigItem}
                                                             onrefresh={refreshPreview}>
-                                </c-linked-object-item-list>                                
+                                </c-linked-object-item-list>    
                             </lightning-tab>
                         </lightning-tabset>
                     </lightning-layout-item>

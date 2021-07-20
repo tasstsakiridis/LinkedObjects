@@ -6,20 +6,20 @@
                     {itemIndex}
                 </div>    
             </template>
-            <div class="slds-col">
+            <div class="slds-col bf_size_8-of-10">
                 <lightning-tile label={title}  class="slds-p-around_x-small" style="background-color: white; min-height: 100%;">
                     <div>
                         <template if:true={isAction}>
                             <template if:true={isFlow}>
-                                <span style="font-size: 8pt;">{subTitle}</span>
+                                <span style="font-size: 8pt; overflow-wrap: break-word;">{subTitle}</span>
                             </template>
                             <template if:true={isApexClass}>
-                                <p style="font-size: 8pt;">{actionClassName}</p>
-                                <p style="font-size: 8pt;">{actionMethodName}</p>    
+                                <p style="font-size: 8pt; overflow-wrap: break-word;">{actionClassName}</p>
+                                <p style="font-size: 8pt; overflow-wrap: break-word;">{actionMethodName}</p>    
                             </template>
                         </template>
                         <template if:false={isAction}>
-                            <span style="font-size: 8pt;">{subTitle}</span>
+                            <span style="font-size: 8pt; overflow-wrap: break-word;">{subTitle}</span>
                         </template>
                     </div>
                 </lightning-tile>
@@ -34,7 +34,7 @@
         <div class="lo-container">
         <lightning-card>
             <span slot="title">{title}</span>
-            <lightning-button-icon slot="actions" icon-name="utility:close" alternative-text="Cancel" title="close" variant="bare" onclick={closeFilter} ></lightning-button-icon>    
+            <lightning-button-icon slot="actions" icon-name="utility:close" alternative-text="Cancel" title="close" variant="bare" onclick={closeItem} ></lightning-button-icon>    
     
             <lightning-button-group slot="footer">
                 <lightning-button label="Apply" title="Apply" variant="brand" onclick={applyChanges} ></lightning-button>
@@ -56,7 +56,11 @@
                         </lightning-layout-item>
                         <lightning-layout-item size="12" class="slds-m-vertical_small">
                             <div>
-                                <!--
+                                <lightning-combobox label={labels.field.label} value={fieldName}
+                                options={availableFields}
+                                onchange={handleFieldNameChange}>
+                                </lightning-combobox>
+                            <!--
                                 <template if:true={linkedObjectSelected}>
                                     <lightning-combobox label={labels.field.label} value={fieldName}
                                                         options={linkedObjectFields}
@@ -69,18 +73,20 @@
                                                         onchange={handleFieldNameChange}>
                                     </lightning-combobox>                                    
                                 </template>
-                                -->
                                 <lightning-input label={labels.field.label} value={fieldName}
                                                  onchange={handleFieldNameChange}>
                                 </lightning-input>
+                                -->
                             </div>
                         </lightning-layout-item>
+                        <!--
                         <lightning-layout-item size="12" class="slds-m-vertical_small">
                             <lightning-combobox label={labels.fieldType.label} value={fieldType}
                                                 options={fieldTypeOptions}
-                                                onchange={handleFieldTypeChange}>
+                                                onchange={handleFieldTypeChange} readonly>
                             </lightning-combobox>                                                
                         </lightning-layout-item>
+                        -->
                         <lightning-layout-item size="12">
                             <div>
                                 <lightning-combobox name="operatorCombo" label={labels.operator.label} 
@@ -194,14 +200,22 @@
             <template if:true={isCounter}>
                 <lightning-layout multiple-rows="true">
                     <lightning-layout-item size="12" padding="around-small">
+                        <!--
                         <lightning-input label={labels.objectToCount.label}
                                         value={objectToCount}
                                         onchange={handleObjectToCountChange}>
-                        </lightning-input>
+                        </lightning-input>-->
+                        <lightning-combobox name="objectToCountCombo" label={labels.objectToCount.label} 
+                                            value={objectToCount} 
+                                            options={relatedObjectList}
+                                            onchange={handleObjectToCountChange}>
+                        </lightning-combobox>
+
                     </lightning-layout-item>
                     <lightning-layout-item size="12" padding="around-small">
                         <lightning-input label={labels.field.label}
                                         value={fieldName}
+                                        disabled
                                         onchange={handleFieldNameChange}>
                         </lightning-input>
                     </lightning-layout-item>
