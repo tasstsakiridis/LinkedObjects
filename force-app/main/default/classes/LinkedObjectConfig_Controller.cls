@@ -567,6 +567,7 @@ public with sharing class LinkedObjectConfig_Controller {
         if (String.isNotEmpty(bfConfig.Source_Object_Record_Id__c)) {
             data.put('sourceObjectRowCount', 1);
         } else {
+            System.debug('buildWhereClause for source object: ' + bfConfig.Source_Object__c);
             queryDetails = buildWhereClause(bfConfig.Source_Object__c, bfConfig.BF_Configuration_Items__r, rtPreviewFieldList, rtFilter, bfConfig.Source_Object_Record_Id__c);            
             System.debug('queryDetails: ' + queryDetails);
             try {
@@ -618,6 +619,7 @@ public with sharing class LinkedObjectConfig_Controller {
         }
 
         fieldList = '';
+        System.debug('build where clause for linked object: ' + bfConfig.Linked_Object__c);
         queryDetails = buildWhereClause(bfConfig.Linked_Object__c, bfConfig.BF_Configuration_Items__r, rtPreviewFieldList, rtFilter, bfConfig.Source_Object_Record_Id__c);
         if (queryDetails.containsKey('fieldList')) {
             fieldList = queryDetails.get('fieldList');
@@ -798,14 +800,18 @@ public with sharing class LinkedObjectConfig_Controller {
         List<String> listValues;
         String fieldValue;
         Map<String, String> result = new Map<String, String>();
-        System.debug('configItems: ' + configItems);
+        System.debug('[buildWhereClause] objectName: ' + objectName);
+        System.debug('[buildWhereClause] rtPreviewFieldList: ' + rtPreviewFieldList);
+        System.debug('[buildWhereClause] rtFilter: ' + rtFilter);
+        System.debug('[buildWhereClause] sourceObjectRecordId: ' + sourceObjectRecordId);
+        System.debug('[buildWhereClause] configItems: ' + configItems);
         if (configItems != null && configItems.size() > 0) {
             for(BF_Configuration_Item__c bfci : configItems) {
                 System.debug('bfci: ' + bfci);
                 if (bfci.Object__c == objectName) {
                     if (bfci.Filter_Type__c == 'Value') {
                         fieldValue = bfci.FieldValue__c == null ? '' : bfci.FieldValue__c;
-                    } else if (bfci.Filter_Type__c == 'Field') {
+                    } else if (bfci.Filter_Type__c == 'Field' && String.isNotEmpty(sourceObjectRecordId)) {
                         fieldValue = getReferencedFieldValue(bfci.Referenced_Object__c, bfci.Referenced_Field__c, sourceObjectRecordId);
                         if (String.isNotEmpty(fieldValue)) {
                             fieldValue = fieldValue.replaceAll(';',',');
@@ -821,7 +827,7 @@ public with sharing class LinkedObjectConfig_Controller {
                         result.put('previewField2', bfci.Preview_Field_2__c);
                     } else if (bfci.RecordTypeId == rtFilter) {
                         //whereClause += bfci.FieldName__c;
-                        System.debug('operator: ' + bfci.Operator__c);
+                        System.debug('[buildWhereClause] operator: ' + bfci.Operator__c);
                         if (bfci.Operator__c == 'starts with') {
                             if (valuesIsList) {
                                 whereClause += '(';

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Summarize_Fields__c</fullName>
+    <defaultValue>&quot;SUM&quot;</defaultValue>
+    <externalId>false</externalId>
+    <label>Summarize Fields</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>AVERAGE</fullName>
+                <default>false</default>
+                <label>AVERAGE</label>
+            </value>
+            <value>
+                <fullName>SUM</fullName>
+                <default>false</default>
+                <label>SUM</label>
+            </value>
+            <value>
+                <fullName>COUNT</fullName>
+                <default>false</default>
+                <label>COUNT</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -42,6 +42,8 @@ private class LinkedObjectConfig_Controller_Test {
             a.Name = 'Test Account';
             a.Market__c = mAU.Id;
             a.RecordTypeId = rtAccount;
+            a.Channel__c = 'On';
+            a.Actionable_Segment__c = 'Casual Dining';
             insert a;
 
             Promotion_Activity__c pa = new Promotion_Activity__c();
@@ -90,6 +92,40 @@ private class LinkedObjectConfig_Controller_Test {
             prod1.IsActive__c = true;
             insert prod1;
 
+            BF_Configuration__c marketConfig = new BF_Configuration__c();
+            marketConfig.Market__c = mAU.Id;
+            marketConfig.Source_Object__c = 'Promotion_Activity__c';
+            marketConfig.Linked_Object__c = 'Account';
+            marketConfig.RecordTypeId = rtLinkedObject;
+            insert marketConfig;
+            
+            BF_Configuration_Item__c marketConfigFilter1 = new BF_Configuration_Item__c();
+            marketConfigFilter1.BF_Configuration__c = marketConfig.Id;
+            marketConfigFilter1.RecordTypeId = rtFilter;
+            marketConfigFilter1.Auto_Add__c = true;
+            marketConfigFilter1.Object__c = 'Account';
+            marketConfigFilter1.FieldName__c = 'Actionable_Segment__c';
+            marketConfigFilter1.FieldValue__c = 'Casual Dining';
+            marketConfigFilter1.FieldType__c = 'Text';
+            marketConfigFilter1.Filter_Type__c = 'Value';
+            marketConfigFilter1.Operator__c = 'equals';            
+
+            BF_Configuration_Item__c marketConfigFilter2 = new BF_Configuration_Item__c();
+            marketConfigFilter2.BF_Configuration__c = marketConfig.Id;
+            marketConfigFilter2.RecordTypeId = rtFilter;
+            marketConfigFilter2.Auto_Add__c = true;
+            marketConfigFilter2.Object__c = 'Account';
+            marketConfigFilter2.FieldName__c = 'Channel__c';
+            marketConfigFilter2.FieldValue__c = '';
+            marketConfigFilter2.FieldType__c = 'Text';
+            marketConfigFilter2.Filter_Type__c = 'Field';
+            marketConfigFilter2.Operator__c = 'equals';            
+            marketConfigFilter2.Referenced_Object__c = 'Promotion_Activity__c';
+            marketConfigFilter2.Referenced_Field__c = 'Channel__c';
+
+            BF_Configuration_Item__c[] marketConfigItems = new BF_Configuration_Item__c[]{marketConfigFilter1, marketConfigFilter2};
+            insert marketConfigItems;
+            
             Map<String, String> sresult = LinkedObjectConfig_Controller.getObjectMetadata(pa.Id);
             
             Map<String, Object> result = LinkedObjectConfig_Controller.callAction('', '', '', '', null);
@@ -120,23 +156,39 @@ private class LinkedObjectConfig_Controller_Test {
                 'Id' => ciFilter.Id,
                 'Index__c' => 1,
                 'Object__c' => 'Promotion_Activity__c',
-                'FieldName__c' => 'Id',
-                'FieldValue__c' => pa.Id,
+                'FieldName__c' => 'Status__c',
+                'FieldValue__c' => 'Approved',
                 'FieldLabel__c' => 'Activity',
+                'FieldType__c' => 'Text',
                 'Operator__c' => 'equals'
             };
             Map<String, Object> filter2 = new Map<String, Object> {
                 'Index__c' => 1,
                 'Object__c' => 'Account',
                 'FieldName__c' => 'Channel__c',
-                'FieldValue__c' => 'On',
+                'FieldValue__c' => '',
                 'FieldLabel__c' => 'Channel',
-                'Operator__c' => 'equals'
+                'Operator__c' => 'equals',
+                'FieldType__c' => 'Text',
+                'FilterType__c' => 'Field',
+                'Referenced_Object__c' => 'Promotion_Activity__c',
+                'Referenced_Field__c' => 'Channel__c'
             };
+                
+                Map<String, Object> filter3 = new Map<String, Object> {
+                    'Index__c' => 2,
+                        'Object__c' => 'Account',
+                        'FieldName__c' => 'Channel__c',
+                        'FieldValue__c' => 'Off',
+                        'Operator__c' => 'notequals',
+                        'FieldType__c' => 'Text',
+                        'FilterType__c' => 'Value'
+                        };
             List<String> filters = new List<String>();
             filters.add(JSON.serialize(filter1));
             filters.add(JSON.serialize(filter2));
-            result = LinkedObjectConfig_Controller.saveConfig(config.Id, 'Promotion_Activity__c', 'Account', '','', rtActivity, filters, null);
+            filters.add(JSON.serialize(filter3));
+            result = LinkedObjectConfig_Controller.saveConfig(config.Id, 'Promotion_Activity__c', 'Account', '',pa.Id, rtActivity, filters, null);
             System.debug('saveConfig result: ' + result);
 
             List<String> fieldList = new List<String>();
@@ -159,6 +211,12 @@ private class LinkedObjectConfig_Controller_Test {
             result = LinkedObjectConfig_Controller.getCount(config.Id, pa.Id, 'Promotion__c', 'Promotion_Activity__c');
             System.debug('getCount result: ' + result);
 
+            result = LinkedObjectConfig_Controller.getDataForPreview(config.Id);
+            System.debug('getDataForPreview result: ' + result);
+
+            result = LinkedObjectConfig_Controller.saveConfig(config.Id, 'Promotion_Activity__c', 'Account', '','', rtActivity, null, null);
+            System.debug('saveConfig2 result: ' + result);
+            
             result = LinkedObjectConfig_Controller.getDataForPreview(config.Id);
             System.debug('getDataForPreview result: ' + result);
 
