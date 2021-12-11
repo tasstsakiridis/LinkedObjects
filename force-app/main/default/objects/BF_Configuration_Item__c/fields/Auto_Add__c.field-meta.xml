@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Is_Filter__c</fullName>
+    <fullName>Auto_Add__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Check to automatically add this filter/action/counter to source object record</description>
     <externalId>false</externalId>
-    <formula>RecordType.DeveloperName = &apos;Filter&apos;</formula>
-    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Is Filter</label>
+    <label>Auto Add</label>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Checkbox</type>

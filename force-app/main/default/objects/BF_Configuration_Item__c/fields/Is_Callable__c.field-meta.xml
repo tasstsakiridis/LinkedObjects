@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Callable__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Check if you want the action to be executed through a trigger or another class,  Leave unchecked if the action should be triggered through the UI</description>
+    <externalId>false</externalId>
+    <label>Is Callable</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

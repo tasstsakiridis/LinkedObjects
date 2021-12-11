@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Linked_Objects</fullName>
+    <fullName>Map</fullName>
     <active>true</active>
-    <label>Linked Objects</label>
+    <label>Map</label>
     <picklistValues>
         <picklist>Default_Filters__c</picklist>
         <values>
@@ -29,7 +29,19 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Account_Survey%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Attachment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>B_F_Learning_Roadmap%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>E_Premise_Campaigns%5F%5Fc</fullName>
             <default>false</default>
         </values>
         <values>
@@ -67,7 +79,19 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Account_Survey%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Attachment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>B_F_Learning_Roadmap%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>E_Premise_Campaigns%5F%5Fc</fullName>
             <default>false</default>
         </values>
         <values>

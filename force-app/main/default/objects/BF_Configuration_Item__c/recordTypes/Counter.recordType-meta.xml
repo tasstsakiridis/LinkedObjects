@@ -4,6 +4,33 @@
     <active>true</active>
     <label>Counter</label>
     <picklistValues>
+        <picklist>Action_Triggered_By__c</picklist>
+        <values>
+            <fullName>After Delete</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>After Insert</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>After Update</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Before Delete</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Before Insert</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Before Update</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Action_Type__c</picklist>
         <values>
             <fullName>Apex</fullName>
@@ -31,6 +58,17 @@
         <values>
             <fullName>Text</fullName>
             <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Filter_Type__c</picklist>
+        <values>
+            <fullName>Field</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Value</fullName>
+            <default>true</default>
         </values>
     </picklistValues>
     <picklistValues>
@@ -100,6 +138,128 @@
         </values>
         <values>
             <fullName>starts with</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>PICOS_Category__c</picklist>
+        <values>
+            <fullName>Maintain</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Priority</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Seed and Grow</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Segment__c</picklist>
+        <values>
+            <fullName>DRINK</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>EAT</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>ENTERTAIN</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>SLEEP</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Split_Color__c</picklist>
+        <values>
+            <fullName>Black</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Blue</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Green</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Orange</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Purple</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Red</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>SubSegment__c</picklist>
+        <values>
+            <fullName>Casual Dining</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cocktail Led</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Destination</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Formal Dining</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Guest Forward</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Late Night</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Resident Forward</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Simple Serve</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Summarize_Fields__c</picklist>
+        <values>
+            <fullName>AVERAGE</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>COUNT</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>SUM</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Survey_Category__c</picklist>
+        <values>
+            <fullName>Backbar</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Menu</fullName>
             <default>false</default>
         </values>
     </picklistValues>

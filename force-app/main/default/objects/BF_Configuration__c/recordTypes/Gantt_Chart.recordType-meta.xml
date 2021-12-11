@@ -4,13 +4,44 @@
     <active>true</active>
     <label>Gantt Chart</label>
     <picklistValues>
+        <picklist>Default_Filters__c</picklist>
+        <values>
+            <fullName>Brand</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Channel</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>RecordType</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Status</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Linked_Object__c</picklist>
         <values>
             <fullName>Account</fullName>
             <default>false</default>
         </values>
         <values>
+            <fullName>Account_Survey%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Attachment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>B_F_Learning_Roadmap%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>E_Premise_Campaigns%5F%5Fc</fullName>
             <default>false</default>
         </values>
         <values>
@@ -31,13 +62,36 @@
         </values>
     </picklistValues>
     <picklistValues>
+        <picklist>Source_Object_Market_Field_Type__c</picklist>
+        <values>
+            <fullName>Lookup</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Text</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Source_Object__c</picklist>
         <values>
             <fullName>Account</fullName>
             <default>false</default>
         </values>
         <values>
+            <fullName>Account_Survey%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Attachment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>B_F_Learning_Roadmap%5F%5Fc</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>E_Premise_Campaigns%5F%5Fc</fullName>
             <default>false</default>
         </values>
         <values>

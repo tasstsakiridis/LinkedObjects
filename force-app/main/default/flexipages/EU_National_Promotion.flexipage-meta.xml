@@ -101,10 +101,33 @@
     <flexiPageRegions>
         <componentInstances>
             <componentInstanceProperties>
-                <name>placeholderText</name>
-                <value>Gantt chart of promotions that running or plan to run this activity</value>
+                <name>parentFieldApiName</name>
+                <value>Promotion_Activity__c.Id</value>
             </componentInstanceProperties>
-            <componentName>lightningComponentPlaceholder</componentName>
+            <componentInstanceProperties>
+                <name>relatedListApiName</name>
+                <value>AttachedContentDocuments</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>relatedListComponentOverride</name>
+                <value>NONE</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>rowsToDisplay</name>
+                <value>10</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>showActionBar</name>
+                <value>true</value>
+            </componentInstanceProperties>
+            <componentName>force:relatedListSingleContainer</componentName>
+        </componentInstances>
+        <name>Facet-35bc86fc-e6f6-453a-821a-7793459d67fd</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <componentInstances>
+            <componentName>promotionGanttChart</componentName>
         </componentInstances>
         <name>Facet-fa53a0a9-ec20-49ab-8c6d-038ce8aa0c6e</name>
         <type>Facet</type>
@@ -177,6 +200,17 @@
         <componentInstances>
             <componentInstanceProperties>
                 <name>body</name>
+                <value>Facet-35bc86fc-e6f6-453a-821a-7793459d67fd</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>title</name>
+                <value>Promotion Media</value>
+            </componentInstanceProperties>
+            <componentName>flexipage:tab</componentName>
+        </componentInstances>
+        <componentInstances>
+            <componentInstanceProperties>
+                <name>body</name>
                 <value>Facet-fa53a0a9-ec20-49ab-8c6d-038ce8aa0c6e</value>
             </componentInstanceProperties>
             <componentInstanceProperties>
@@ -204,6 +238,41 @@
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <componentInstances>
+            <componentInstanceProperties>
+                <name>celebrateStep</name>
+                <value>true</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>celebrationType</name>
+                <value>basic,basic,basic,basic,fireworks,random,fireworks,basic,fireworks</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>fieldName</name>
+                <value>Status__c</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>objectName</name>
+                <value>Promotion_Activity__c</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>showConfettiActions</name>
+                <value>false</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>stepLabels</name>
+                <value>New,Draft,Planned,Submitted,Approved,Sell-In,Active,Follow-Up,Completed</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>stepValues</name>
+                <value>New,Draft,Planned,Submitted,Approved,Sell-In,Active,Follow-Up,Completed</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>usePicklistValues</name>
+                <value>false</value>
+            </componentInstanceProperties>
+            <componentName>bfPath</componentName>
+        </componentInstances>
         <componentInstances>
             <componentInstanceProperties>
                 <name>tabs</name>

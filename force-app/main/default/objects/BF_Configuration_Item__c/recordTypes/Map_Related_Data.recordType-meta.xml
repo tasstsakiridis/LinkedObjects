@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Filter</fullName>
+    <fullName>Map_Related_Data</fullName>
     <active>true</active>
-    <label>Filter</label>
+    <label>Map Related Data</label>
     <picklistValues>
         <picklist>Action_Triggered_By__c</picklist>
         <values>
@@ -28,6 +28,10 @@
         <values>
             <fullName>Before Update</fullName>
             <default>false</default>
+        </values>
+        <values>
+            <fullName>User Interface</fullName>
+            <default>true</default>
         </values>
     </picklistValues>
     <picklistValues>
