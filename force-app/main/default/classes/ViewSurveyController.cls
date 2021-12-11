@@ -322,7 +322,7 @@ global virtual with sharing class ViewSurveyController {
       public list<string> multiResponses      { get; set; }
       public map<string, string> choiceMap    { get; set; }
       public List<String> pointValues         { get; set; }
-      public Map<String, Integer> optionPointValues   { get; set; }
+      public Map<String, Decimal> optionPointValues   { get; set; }
 
       public list<SurveyQuestionResponse__c> existingResponses = new list<SurveyQuestionResponse__c>();
       public ViewSurveyController vsc;
@@ -333,6 +333,7 @@ global virtual with sharing class ViewSurveyController {
       public question(Survey_Question__c sq, ViewSurveyController parentClass) {
         name = sq.Name;
         id = sq.Id;
+        optionPointValues = new Map<String, Decimal>();
         question = sq.Question__c;
         orderNumber = String.valueOf(sq.OrderNumber__c+1);
         choices = sq.Choices__c;
@@ -374,14 +375,14 @@ global virtual with sharing class ViewSurveyController {
             for(Integer tt = 0; tt < singleOptions.size(); tt++) {
               System.debug('singleOptions. option: ' + tt + ' : ' +singleOptions.get(tt));
             }
-            optionPointValues = new Map<String, Integer>();
+            //optionPointValues = new Map<String, Integer>();
             if (sq.Point_Values__c != null && sq.Point_Values__c != '') {
               System.debug('sq.Point_Values__c: ' + sq.Point_Values__c);
               pointValues = sq.Point_Values__c.split(',');
               System.debug('pointValues: ' + pointValues);
               for(Integer i = 0; i < pointValues.size(); i++) {
-                System.debug('option ['+(i+1)+'] = ' + singleOptions[i+1].getLabel());
-                optionPointValues.put(singleOptions[i+1].getLabel(),Integer.valueOf(pointValues[i]));
+                System.debug('option ['+(i+1)+'] = ' + singleOptions[i].getLabel());
+                optionPointValues.put(singleOptions[i+1].getLabel(),Decimal.valueOf(pointValues[i]));
               }
             }
 
@@ -406,6 +407,16 @@ global virtual with sharing class ViewSurveyController {
         }else if (sq.Type__c=='Single Select--Horizontal') {
             renderSelectCheckboxes='false';
             rowOptions = stringToSelectOptions(choices);
+            if (sq.Point_Values__c != null && sq.Point_Values__c != '') {
+              System.debug('sq.Point_Values__c: ' + sq.Point_Values__c);
+              pointValues = sq.Point_Values__c.split(',');
+              System.debug('pointValues: ' + pointValues);
+              for(Integer i = 0; i < pointValues.size(); i++) {
+                System.debug('option ['+(i+1)+'] = ' + rowOptions[i].getLabel());
+                optionPointValues.put(rowOptions[i].getLabel(),Decimal.valueOf(pointValues[i]));
+              }
+            }
+
             renderSelectRadio='false';
             renderFreeText='false';
             renderSelectRow = 'true';
@@ -526,6 +537,7 @@ global virtual with sharing class ViewSurveyController {
             system.debug('attachments: '+q.Attachments);
             system.debug('this: '+this);
             question theQ = new question(q, this);
+            System.debug('question ['+theQ.Id+'] : ' + theQ);
             allQuestions.add(theQ);
         }
         allQuestionsSize = allQuestions.size();
@@ -652,6 +664,7 @@ global virtual with sharing class ViewSurveyController {
                     else
                     {
                         sqr.Response__c = q.multiOptions.get(Integer.valueOf(opt)).getLabel();
+                      sqr.Point_Value__c = q.optionPointValues.get(sqr.Response__c);
                     }
                     sqr.Survey_Question__c = q.Id;
                     sqrList.add(sqr);
@@ -680,6 +693,7 @@ global virtual with sharing class ViewSurveyController {
                 else
                 {
                     sqr.Response__c = q.rowOptions.get(Integer.valueOf(q.selectedOption)).getLabel();
+                    sqr.Point_Value__c = q.optionPointValues.get(sqr.Response__c);
                 }
                 sqr.Survey_Question__c = q.Id;
                 sqrList.add(sqr);

@@ -30,6 +30,21 @@
         <default>false</default>
         <label>Survey__c</label>
     </customValue>
+    <customValue>
+        <fullName>E_Premise_Campaigns__c</fullName>
+        <default>false</default>
+        <label>E_Premise_Campaigns__c</label>
+    </customValue>
+    <customValue>
+        <fullName>Account_Survey__c</fullName>
+        <default>false</default>
+        <label>Account_Survey__c</label>
+    </customValue>
+    <customValue>
+        <fullName>B_F_Learning_Roadmap__c</fullName>
+        <default>false</default>
+        <label>BF Learning Roadmap</label>
+    </customValue>
     <masterLabel>Configuration Objects</masterLabel>
     <sorted>false</sorted>
 </GlobalValueSet>

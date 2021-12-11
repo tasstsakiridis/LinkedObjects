@@ -1,4 +1,6 @@
-/* Description  : Activity used for roll up summary activity to parent market campaign on each activity created,edited, deleted.
+/* 
+ * Description  : Activity used for roll up summary activity to parent market campaign on each activity created,edited, deleted.
+ * Test Class   : PreEvaluationForm_Controller_Test
  * */
 trigger Activity on Promotion_Activity__c (before insert, before update, after insert, after update, before delete, after delete) {
     /*
@@ -23,7 +25,7 @@ trigger Activity on Promotion_Activity__c (before insert, before update, after i
     if ((Trigger.isInsert || Trigger.isUpdate) && Trigger.isBefore) {
         for (Promotion_Activity__c pa : Trigger.new) {
             if (pa.Promo_Brands__c != null) {
-                pa.Promo_Brands_Description__c = pa.Promo_Brands__c;
+                pa.Promo_Brands_Description__c = pa.Promo_Brands__c.left(255);
             }
         }
     }

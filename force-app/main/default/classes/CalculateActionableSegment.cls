@@ -6,24 +6,30 @@ public class CalculateActionableSegment {
         System.debug('[getKey] key: ' + key);
         System.debug('[getKey] numberOfParts: ' + numberOfParts);
         System.debug('[getKey] parts: ' + parts);
-
+        for(String k : configs.keySet()) {
+            System.debug('config key: ' + k);
+        }
         String returnKey = key;
         Boolean keyFound = false;
         while (!keyFound) {
-            System.debug('[getKey] key: ' + key);
-            if (configs.containsKey(key)) {
+            System.debug('[getKey] key: ' + returnKey);
+            if (configs.containsKey(returnKey)) {
+                System.debug('[getKey] configs contain key: ' + returnKey);
                 keyFound = true;
             } else {
+                System.debug('[getKey] numberOfParts: ' + numberOfParts);
                 numberOfParts--;
-                if (numberOfParts <= 1) { break; }
+                if (numberOfParts < 1) { break; }
 
-                for(Integer i = 0; i < numberOfParts; i++) {
+                returnKey = '';
+                for(Integer i = 0; i <= numberOfParts; i++) {
                     returnKey += parts[i] + '_';
                 }
 
-                returnKey.removeEnd('_');
+                returnKey = returnKey.removeEnd('_');
             }
 
+            System.debug('[getKey] keyFound: ' + keyFound + ', returnKey: ' + returnKey);
         }
 
         return returnKey;
@@ -34,6 +40,8 @@ public class CalculateActionableSegment {
         List<Actionable_Segment_Config__c> l_ActionableSegmentConfig = [SELECT Market__c, Dimension__c, Channel__c, Group__c, Point_Value__c, Segment_Value__c, Position__c 
                                                                             FROM Actionable_Segment_Config__c
                                                                         ORDER BY Market__c, Position__c, Point_Value__c DESC];
+
+        System.debug('# of actionable segment configs found: ' + l_ActionableSegmentConfig.size());
         List<Actionable_Segment_Config__c> l_SegmentConfigs;
         String key = '';
         for(Actionable_Segment_Config__c segmentConfig : l_ActionableSegmentConfig) {                
@@ -54,7 +62,7 @@ public class CalculateActionableSegment {
             l_SegmentConfigs = m_ActionableSegmentConfig.get(k);
             System.debug('key: ' + k + ' has ' + l_SegmentConfigs.size() + ' configs');
             for(Actionable_Segment_Config__c a : l_SegmentConfigs) {
-                System.debug('['+k+'] Channel: ' + a.Channel__c + ', Dimension: ' + a.Dimension__c + ', Position: ' + a.Position__c + ', Point: ' + a.Point_Value__c + ', SegmentValue: ' + a.Segment_Value__c);
+                System.debug('[getActionableSegmentConfigs.'+k+'] Channel: ' + a.Channel__c + ', Dimension: ' + a.Dimension__c + ', Position: ' + a.Position__c + ', Point: ' + a.Point_Value__c + ', SegmentValue: ' + a.Segment_Value__c);
             }
         }
 
@@ -85,15 +93,19 @@ public class CalculateActionableSegment {
                 if (st.Account__r.Group__c != null && st.Account__r.Group__c != '') { key += '_' + st.Account__r.Group__c; }
                 key = getKey(key, m_ActionableSegmentConfig);
                 System.debug('[calcactionablesegment] key: ' + key);
+                System.debug('[calcactionablesegment] m_actionablesegmentconfig keys: ' + m_ActionableSegmentConfig.keySet());
                 if (m_ActionableSegmentConfig.containsKey(key)) {
                     l_SegmentConfigs = m_ActionableSegmentConfig.get(key); 
                                                    
                     for(Actionable_Segment_Config__c segmentConfig : l_SegmentConfigs) {
-                        useSegmentConfig = true;
+                        useSegmentConfig = false;
                         if (segmentConfig.Channel__c != null && segmentConfig.Channel__c != '' && segmentConfig.Channel__c == st.Account__r.Channel__c) {
+                            useSegmentConfig = true;
                             segmentGroup = segmentConfig.Group__c == null ? '' : segmentConfig.Group__c;
-                            accountGroup = st.Account__r.Group__c == null ? '' : st.Account__r.Group__c;
-                            if (segmentGroup != accountGroup) { useSegmentConfig = false; }
+                            if (segmentGroup != '') {
+    	                        accountGroup = st.Account__r.Group__c == null ? '' : st.Account__r.Group__c;
+	                            if (segmentGroup != accountGroup) { useSegmentConfig = false; }                                
+                            }
                         }
                         System.debug('segment config dimension: ' + segmentConfig.Dimension__c);
                         if (useSegmentConfig) {
@@ -103,14 +115,16 @@ public class CalculateActionableSegment {
 
                     for(SurveyQuestionResponse__c sqr : st.Survey_Question_Answers__r) {
                         if (sqr.Dimension__c != null && m_Segments.containsKey(sqr.Dimension__c)) {
+                            System.debug('dimension: ' + m_Segments.get(sqr.Dimension__c));
+                            System.debug('point value: ' + sqr.Point_Value__c);
                             Integer p = (Integer)m_Segments.get(sqr.Dimension__c);
-                            p += (Integer)sqr.Point_Value__c;
+                            p += sqr.Point_Value__c.intValue();   
                             m_Segments.put(sqr.Dimension__c, p);
                         }
                     }
 
                     for(String s : m_Segments.keySet()) {
-                        System.debug(s + ' = ' + String.valueOf(m_Segments.get(s)));
+                        System.debug('[calculateSegment] segmentKey: ['+s+']' + ' = ' + String.valueOf(m_Segments.get(s)));
                     }
                     Map<String, String> m_ActionableSegment = new Map<String, String>();
                     for(Actionable_Segment_Config__c segmentConfig : l_SegmentConfigs) {

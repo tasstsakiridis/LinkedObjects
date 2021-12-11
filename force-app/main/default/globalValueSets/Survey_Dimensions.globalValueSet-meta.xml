@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Energy Levels</fullName>
+        <default>false</default>
+        <label>Energy Levels</label>
+    </customValue>
+    <customValue>
+        <fullName>Execution Allowance</fullName>
+        <default>false</default>
+        <label>Execution Allowance</label>
+    </customValue>
+    <customValue>
+        <fullName>Premiumness</fullName>
+        <default>false</default>
+        <label>Premiumness</label>
+    </customValue>
+    <customValue>
+        <fullName>Training &amp; Incentives</fullName>
+        <default>false</default>
+        <label>Training &amp; Incentives</label>
+    </customValue>
+    <masterLabel>Survey Dimensions</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

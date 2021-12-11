@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Filter</fullName>
+    <fullName>PICOS_Survey</fullName>
     <active>true</active>
-    <label>Filter</label>
+    <label>PICOS Survey</label>
     <picklistValues>
         <picklist>Action_Triggered_By__c</picklist>
         <values>
@@ -28,6 +28,10 @@
         <values>
             <fullName>Before Update</fullName>
             <default>false</default>
+        </values>
+        <values>
+            <fullName>User Interface</fullName>
+            <default>true</default>
         </values>
     </picklistValues>
     <picklistValues>
@@ -75,14 +79,6 @@
         <picklist>Object__c</picklist>
         <values>
             <fullName>Account</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>B_F_Learning_Roadmap%5F%5Fc</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>E_Premise_Campaigns%5F%5Fc</fullName>
             <default>false</default>
         </values>
         <values>
