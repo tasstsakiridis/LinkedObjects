@@ -211,13 +211,13 @@ private class LinkedObjectConfig_Controller_Test {
             result = LinkedObjectConfig_Controller.getCount(config.Id, pa.Id, 'Promotion__c', 'Promotion_Activity__c');
             System.debug('getCount result: ' + result);
 
-            result = LinkedObjectConfig_Controller.getDataForPreview(config.Id);
+            result = LinkedObjectConfig_Controller.getDataForPreview(config.Id, false, manager.Id);
             System.debug('getDataForPreview result: ' + result);
 
             result = LinkedObjectConfig_Controller.saveConfig(config.Id, 'Promotion_Activity__c', 'Account', '','', rtActivity, null, null);
             System.debug('saveConfig2 result: ' + result);
             
-            result = LinkedObjectConfig_Controller.getDataForPreview(config.Id);
+            result = LinkedObjectConfig_Controller.getDataForPreview(config.Id, false, manager.Id);
             System.debug('getDataForPreview result: ' + result);
 
             result = LinkedObjectConfig_Controller.deleteItem(ciFilter.Id, 'Filter', 1);

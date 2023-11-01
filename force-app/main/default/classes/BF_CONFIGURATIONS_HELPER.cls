@@ -1,5 +1,5 @@
 /**
- * Test Class:  BF_CONFIGURATIONS_HELPER_TEST
+ * Test Class:  BF_CONFIGUATIONS_HELPER_TEST
  */
 public with sharing class BF_CONFIGURATIONS_HELPER {
     public static Set<String> actionsQueue = new Set<String>();
@@ -128,9 +128,6 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
         Map<String, Object> result = new Map<String, Object>();
 
         try {
-            System.debug('sourceObject: ' + sourceObject);
-            System.debug('linkedObject: ' + linkedObject);
-            System.debug('inputs: ' + inputs);
             Set<String> marketIds = new Set<String>();
             Set<String> marketNames = new Set<String>();
             Set<String> recordTypeIds = new Set<String>();
@@ -174,10 +171,7 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                 }
             }
 
-            System.debug('sourceObjectRecordIds: ' + sourceObjectRecordIds);
-            System.debug('# of marketIds: ' + marketIds.size());
-            System.debug('# of marketNames: ' + marketNames.size());
-            System.debug('# of recordTypeIds: ' + recordTypeIds.size());
+
             if (marketIds.size() == 0 && marketNames.size() == 0 && recordTypeIds.size() == 0) {
                 String marketFieldName = '';
                 String marketFieldType = 'Lookup';
@@ -187,17 +181,12 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                                                         WHERE Source_Object__c=:sourceObject 
                                                           AND Linked_Object__c=:linkedObject
                                                         LIMIT 1];
-
-                System.debug('[get configs for markets,etc] configs: ' + configs);
                 if (configs != null && configs.size() > 0) {
                     marketFieldName = configs[0].Source_Object_Market_Field_Name__c;
                     marketFieldType = configs[0].Source_Object_Market_Field_Type__c;    
                     sourceObjectRecordType = configs[0].Source_Object_Record_Type__c;            
                 }
     
-                System.debug('[get configs for markets,etc] marketFieldName: ' + marketFieldName);
-                System.debug('[get configs for markets,etc] marketFieldType: ' + marketFieldType);
-                System.debug('[get configs for markets,etc] sourceObjectRecordType: ' + sourceObjectRecordType);
                 soql = '';
                 if (String.isNotEmpty(marketFieldName)) {
                     soql = marketFieldName;
@@ -208,7 +197,6 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                     }
                     soql += 'RecordTypeId';
                 }
-                System.debug('[get configs for markets,etc] soql: ' + soql);
                 if (String.isNotEmpty(soql)) {
                     soql = 'SELECT ' + soql + ' FROM ' + sourceObject + ' WHERE Id=:sourceObjectRecordIds';
                     List<SObject> sourceObjectRows = Database.query(soql);
@@ -226,10 +214,6 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                     }
                 }    
             }
-            System.debug('marketIds: ' + marketIds);
-            System.debug('marketNames: ' + marketNames);
-            System.debug('recordTypeIds: ' + recordTypeIds);
-
             String endSoql = '';
             String whereClause = '';
             soql = 'SELECT Id, Action_Class_Name__c, Action_Filter__c, Action_Flow_Name__c, Action_Label__c, Action_Method_Name__c, ';
@@ -270,10 +254,8 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
 
             soql += whereClause + endSoql;
             System.debug('whereClause: ' + whereClause);
-            
             List<BF_Configuration_Item__c> configItems = Database.query(soql);
-            System.debug('configItems: ' + configItems);
-
+            
             Set<BF_Configuration_Item__c> items_Market;
             Set<BF_Configuration_Item__c> items_RecordType;
             Set<BF_Configuration_Item__c> items_RecordId;
@@ -314,11 +296,7 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                 }
             }
             
-            Map<String, List<BF_Configuration_Item__c>> itemsById = new Map<String, List<BF_Configuration_Item__c>>();
-            for(String key : sourceObjectRecordIds) {
-                itemsById.put(key, configItems);
-            }
-            /*
+            Map<String, Set<BF_Configuration_Item__c>> itemsById = new Map<String, Set<BF_Configuration_Item__c>>();
             Set<BF_Configuration_Item__c> items;
             for(String key : inputs.keySet()) {
                 Map<String, Object> o = (Map<String, Object>)inputs.get(key);
@@ -343,7 +321,7 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
                 }
                 itemsById.put(key, items);
             }
-            */
+
             result.put('status', 'SUCCESS');
             result.put('configurations', itemsById);
             result.put('configurationsByMarket', configsByMarket);
@@ -351,11 +329,152 @@ public with sharing class BF_CONFIGURATIONS_HELPER {
             result.put('configurationsByRecordId', configsByRecordId);        
         }catch(Exception ex) {
             result.put('status', 'ERROR');
-            result.put('lineNumber', ex.getLineNumber());
             result.put('message', ex.getMessage());
         }
 
         return result;
+    }
+
+    public static String buildQueryFromConfigurations(List<BF_Configuration_Item__c> configs, String sourceObjectRecordId) {
+        String soql = '';
+        String fieldValue = '';
+        String operator = '';
+        Boolean valuesIsList = false;
+        List<String> listValues;
+
+        Map<String, Schema.RecordTypeInfo> rtList = BF_Configuration_Item__c.SObjectType.getDescribe().getRecordTypeInfosByName();
+        String rtFilter = rtList.get('Filter').getRecordTypeId();
+
+        for (BF_Configuration_Item__c bfci : configs) {      
+            if (bfci.RecordTypeId == rtFilter) {
+                if (bfci.Filter_Type__c == 'Value') {
+                    fieldValue = bfci.FieldValue__c == null ? '' : bfci.FieldValue__c;
+                } else if (bfci.Filter_Type__c == 'Field' && String.isNotEmpty(sourceObjectRecordId)) {
+                    fieldValue = getReferencedFieldValue(bfci.Referenced_Object__c, bfci.Referenced_Field__c, sourceObjectRecordId);
+                    if (String.isNotEmpty(fieldValue)) {
+                        fieldValue = fieldValue.replaceAll(';',',');
+                    }
+                }
+                valuesIsList = fieldValue == null ? false : fieldValue.indexOf(',') > -1;
+                if (valuesIsList) {
+                    listValues = fieldValue.split(',');
+                }
+
+                switch on bfci.Operator__c {
+                    when 'starts with' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql += bfci.FieldName__c + ' LIKE \'%' + s + '\' OR ';
+                            }
+                            soql = soql.removeEnd('OR ');
+                            soql += ')';
+                        } else {
+                            soql += bfci.FieldName__c + ' LIKE \'' + fieldValue + '%\'';
+                        }
+                    }
+
+                    when 'ends with' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql +=  bfci.FieldName__c + ' LIKE \'%' + s + '\' OR ';
+                            }
+                            soql = soql.removeEnd('OR ');
+                            soql += ')';
+                        } else {
+                            soql +=  bfci.FieldName__c + ' LIKE \'%' + fieldValue + '\'';
+                        }
+
+                    }
+                    when 'contains' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql +=  bfci.FieldName__c + ' LIKE \'%' + s + '%\' OR ';
+                            }
+                            soql = soql.removeEnd('OR ');
+                            soql += ')';
+                        } else {
+                            soql +=  bfci.FieldName__c + ' LIKE \'%' + fieldValue + '%\'';
+                        }
+                    }
+                    when 'notcontains' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql += ' (NOT' +  bfci.FieldName__c + ' LIKE \'%' + s + '%\') AND ';
+                            }
+                            soql = soql.removeEnd('AND ');
+                            soql += ')';
+                        } else {
+                            soql += ' LIKE \'%' + fieldValue + '\'';
+                        }
+                    }
+
+                    when 'includes' {
+                        soql +=  bfci.FieldName__c + ' INCLUDES (\'' + fieldValue.replaceAll(',','\',\'') + '\')';
+                    }
+                    when 'notincludes' {
+                        soql +=  bfci.FieldName__c + ' EXCLUDES (\'' + fieldValue.replaceAll(',','\'.\'') + '\')';
+                    }
+                    when 'equals' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql +=  bfci.FieldName__c + ' = \'' + s + '\' OR ';
+                            }
+                            soql = soql.removeEnd('OR ');
+                            soql += ')';
+                        } else {
+                            if (bfci.FieldType__c == 'Text' || bfci.FieldType__c == 'Date') {
+                                soql +=  bfci.FieldName__c + ' = \'' + fieldValue + '\'';
+                            } else {
+                                soql +=  bfci.FieldName__c + ' = ' + fieldValue;                            
+                            }
+                        }
+
+                    }
+
+                    when 'notequals' {
+                        if (valuesIsList) {
+                            soql += '(';
+                            for(String s : listValues) {
+                                soql +=  bfci.FieldName__c + ' != \'' + s + '\' AND ';
+                            }
+                            soql = soql.removeEnd('AND ');
+                            soql += ')';
+                        } else {
+                            soql +=  bfci.FieldName__c + ' != \'' + fieldValue + '\'';
+                        }
+                    }
+
+                    when else {
+                        soql +=  bfci.FieldName__c + ' ' + bfci.Operator__c + ' \'' + fieldValue + '\'';
+                    }
+                }
+
+                soql += ' AND ';
+
+            }      
+        }
+
+        soql = soql.removeEnd('AND ');
+
+
+        return soql;
+    }    
+
+    private static String getReferencedFieldValue(String objectName, String fieldName, String recordId) {
+        String returnValue = '';
+        String soql = 'SELECT ' + fieldName + ' FROM ' + objectName + ' WHERE Id =\'' + recordId + '\'';
+        List<SObject> records = Database.query(soql);
+        System.debug('record: ' + records);
+        if (records != null && records.size() > 0) {
+            returnValue = (String)records[0].get(fieldName);
+            System.debug('returnValue: ' + returnValue);
+        }
+        return returnValue;
     }
 
 }

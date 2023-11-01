@@ -21,5 +21,11 @@
                 <supportedFormFactor type="Small" />
             </supportedFormFactors>
         </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id" default="" />
+            <property name="marketName" type="String" label="Market" default="" />
+            <property name="sourceObject" type="String" label="Source Object" default="Account" />
+            <property name="linkedObject" type="String" label="Linked Object" default="Promotion_Activity__c" />
+        </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

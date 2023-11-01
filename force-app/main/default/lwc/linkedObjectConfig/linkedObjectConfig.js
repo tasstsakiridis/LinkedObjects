@@ -543,7 +543,8 @@ export default class LinkedObjectConfig extends LightningElement {
         console.log('[linkedObjectConfig.refreshPreview] configId', this.bfConfigId);
         console.log('[linkedobjectconfig.refreshPreview] sourceObjectInfo', this.sourceObjectInfo == undefined ? this.sourceObjectInfo : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
         console.log('[linkedobjectconfig.refreshPreview] linkedObjectInfo', this.linkedObjectInfo == undefined ? this.linkedObjectInfo : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
-        if (this.bfConfigId == undefined && event != undefined) { this.bfConfigId = event.detail; }
+        let includeAllData = false;
+        if (this.bfConfigId == undefined && event != undefined) { this.bfConfigId = event.detail.configId; }
         try {
             const previewElement = this.template.querySelector("c-linked-object-preview");
             console.log('[linkedObjectConfig.refreshPreview] previewElement', previewElement);

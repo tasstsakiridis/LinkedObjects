@@ -183,6 +183,15 @@ export default class LinkedObjectItem extends LightningElement {
         return _title;
     }
     get subTitle() {
+        console.log('[linkObjectItem.subTitle] item', JSON.parse(JSON.stringify(this.item)));
+        console.log('[linkedObjectItem.subTitle] actionFlowName', this.actionFlowName);
+        console.log('[linkedObjectItem.subTitle] actionClassName', this.actionClassName);
+        console.log('[linkedObjectItem.subTitle] actionMethodName', this.actionMethodName);
+        console.log('[linkedObjectItem.subTitle] filterType', this.filterType);
+        console.log('[linkedObjectItem.subTitle] operator', this.operator);
+        console.log('[linkedObjectItem.subTitle] referencedObject', this.referencedObject);
+        console.log('[linkedObjectItem.subTitle] referencedField', this.referencedField);
+        console.log('[linkedObjectItem.subTitle] fieldValue', this.fieldValue);
         var _subtitle = '';
         switch (this.item.itemType) {
             case 'Action':
@@ -286,28 +295,29 @@ export default class LinkedObjectItem extends LightningElement {
             console.log('[linkedObjectItem.set fieldName] value', value);
             if (value != undefined && this.availableFields != undefined) {
                 const fld = this.objectName == this.sourceObject ? this.sourceObjectInfo.fields[value] : this.linkedObjectInfo.fields[value];
-                console.log('fld', JSON.stringify(fld));
+                console.log('fld', JSON.parse(JSON.stringify(fld)));
                 console.log('datatype', fld.dataType);
+
                 switch(fld.dataType) {
                     case "Boolean":
-                        this.setFieldType("bool");
+                        this.setFieldType("Boolean");
                         if (this.fieldValue == undefined || this.fieldValue == '') { this.fieldValue = 'true'; }
                         break;
 
                     case "Date":
                     case "DateTime":
-                        this.setFieldType("date");
+                        this.setFieldType("Date");
                         break;
                         
                     case "Currency":
                     case "Double":
                     case "Int":
                     case "Percent":
-                        this.setFieldType("numeric");
+                        this.setFieldType("Number");
                         break;
 
                     default:    
-                        this.setFieldType("text");
+                        this.setFieldType("Text");
                         break;            
                 }
             }
@@ -422,6 +432,7 @@ export default class LinkedObjectItem extends LightningElement {
     }
     handleFieldNameChange(event) {
         this.fieldName = event.detail.value;
+        console.log('[linkedObjectItem.handleFieldNameChange] fieldname', this.fieldName);
     }
     handleFieldTypeChange(event) {
         this.fieldType = event.detail.value;
@@ -437,24 +448,25 @@ export default class LinkedObjectItem extends LightningElement {
         this.fieldValue = event.detail.value;
     }    
     setFieldType(fieldType) {
-        
+        console.log('[linkedObjectItem.setFieldType] fieldType', fieldType);
         this.fieldTypeDateTime = false;
         this.fieldTypeBoolean = false;
         this.fieldTypeText = false;
         this.fieldTypeNumeric = false;
+        this.fieldType = fieldType;
 
         switch(fieldType) {
-            case "date":
+            case "Date":
                 this.fieldTypeDateTime = true;
                 this.operatorOptions = [...operators.filter(o => o.type.indexOf('date') > -1)];
                 break;
 
-            case "bool":
+            case "Boolean":
                 this.fieldTypeBoolean = true;
                 this.operatorOptions = [...operators.filter(o => o.type.indexOf('boolean') > -1)];
                 break;
 
-            case "numeric":
+            case "Number":
                 this.fieldTypeNumeric = true;
                 this.operatorOptions = [...operators.filter(o => o.type.indexOf('numeric') > -1)];
                 break;
@@ -508,6 +520,7 @@ export default class LinkedObjectItem extends LightningElement {
                 fieldName: this.fieldName,
                 fieldType: this.fieldType,
                 fieldValue: this.fieldValue,
+                filterType: 'Value',
                 operator: this.operator,
                 actionType: this.actionType,
                 actionLabel: this.actionLabel,

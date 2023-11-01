@@ -12,7 +12,7 @@
             <lightning-spinner alternative-text="Loading. Please Wait..." size="large" ></lightning-spinner>
         </template>        
         <div class="slds-m-horizontal_medium">
-            <template if:true={hasData}>
+            <!--<template if:true={hasData}>-->
                 <lightning-layout multiple-rows="true">
                     <lightning-layout-item size="12">
                         <div class="slds-grid">
@@ -102,30 +102,36 @@
                                     -->
                                     </template>
                                 </template>
+                                <template if:true={hasOwnerData}>
+                                    <lightning-radio-group name="ownerFilterGroup" label="" 
+                                                    variant="label-hidden"
+                                                    options={ownerFilterButtons}
+                                                    value={selectedOwnerFilter} type="button"
+                                                    class="slds-m-right_small" 
+                                                    onchange={handleOwnerFilterButtonChange}></lightning-radio-group>
+                                </template>
                                 <lightning-button-icon icon-name="utility:list" onclick={selectLinkedObjectFieldsToDisplay}></lightning-button-icon>
                             </lightning-button-group>
 
-                            <div class="preview-table">
-                                <template if:true={isBFConfig}>
-                                    <p class="slds-text-title_caps text-medium">{linkedObjectLabelPlural}</p>
-                                </template>
-                                <lightning-datatable key-field="Id"
-                                                    data={linkedObjectData}
-                                                    columns={linkedObjectColumns}
-                                                    selected-rows={setSelectedRows}
-                                                    onrowaction={handleRowAction}
-                                                    onrowselection={handleRowSelection}>                                                
-                                </lightning-datatable>                
-                            </div>
+                            <template if:true={hasData}>
+                                <div class="preview-table">
+                                    <template if:true={isBFConfig}>
+                                        <p class="slds-text-title_caps text-medium">{linkedObjectLabelPlural}</p>
+                                    </template>
+                                    <lightning-datatable key-field="Id" data={linkedObjectData} columns={linkedObjectColumns}
+                                        selected-rows={setSelectedRows} onrowaction={handleRowAction} onrowselection={handleRowSelection}>
+                                    </lightning-datatable>
+                                </div>
+                            </template>
+                            <template if:false={hasData}>
+                                <div class="slds-align_absolute-center slds-m-around_large nothing-to-show">
+                                    <p style="font-size: 24pt;">{labels.nothingToShow.label}</p>
+                                </div>
+                            </template>
                         </lightning-card>
                     </lightning-layout-item>
                 </lightning-layout>
-            </template>
-            <template if:false={hasData}>
-                <div class="slds-align_absolute-center">
-                    <p style="font-size: 24pt;">Nothing to show</p>
-                </div>
-            </template>
+            <!--</template>-->
         </div>
     </lightning-card>
 

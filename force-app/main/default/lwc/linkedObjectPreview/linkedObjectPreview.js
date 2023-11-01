@@ -1,18 +1,26 @@
 import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
+import USER_ID from '@salesforce/user/Id';
+
 import getDataForPreview from '@salesforce/apex/LinkedObjectConfig_Controller.getDataForPreview';
 import updateConfigFieldList from '@salesforce/apex/LinkedObjectConfig_Controller.updateConfigFieldList';
 import callAction from '@salesforce/apex/BF_CALL_CUSTOM_ACTION.callAction';
 
+import LABEL_ALL_DATA from '@salesforce/label/c.All_Data';
 import LABEL_ERROR from '@salesforce/label/c.Error';
+import LABEL_MY_DATA from '@salesforce/label/c.My_Data';
+import LABEL_NOTHING_TO_SHOW from '@salesforce/label/c.Nothing_To_Show';
 import LABEL_SUCCESS from '@salesforce/label/c.Success';
 
-const rowActions = [
+const ROW_ACTIONS = [
     { label: 'Create Quick Promotion', name:"quick_promotion" }
 ];
 
 export default class LinkedObjectPreview extends LightningElement {
+    labels = {
+        nothingToShow: { label: LABEL_NOTHING_TO_SHOW }
+    }
 
     @api 
     recordId;
@@ -112,7 +120,11 @@ export default class LinkedObjectPreview extends LightningElement {
     set linkedObjectInfo(value) {
         this._linkedObjectInfo = value;
         const flds = [];
+
         if (value != undefined && value.fields != undefined) {
+            console.log('[linkedObjectPreview] value', value == undefined ? '' : JSON.parse(JSON.stringify(value)));
+            this.hasOwnerData = value.fields['OwnerId'] != undefined;
+
             Object.keys(value.fields).forEach(key => {
                 const fld = value.fields[key];
                 if (fld) {
@@ -127,9 +139,14 @@ export default class LinkedObjectPreview extends LightningElement {
                 if (x > y) { return 1; }
                 return 0; 
             });    
+
+            for(var i = 0; i < this.ownerFilterButtons.length; i++) {
+                this.ownerFilterButtons[i].label = this.ownerFilterButtons[i].label.replace('%0%', value.labelPlural);
+            }
         }
         this.linkedObjectFields = flds;
         console.log('[linkedObjectPreview.set linkedObjectInfo] linkedObjectFields', this.linkedObjectFields);            
+        console.log('[linkedObjectPreview.set linkedObjectInfo] ownerFilterButtons', this.ownerFilterButtons);            
     }
 
 
@@ -170,7 +187,7 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     
     connectedCallback() {
-        this.dispatchEvent(new CustomEvent('refreshready'));
+        this.dispatchEvent(new CustomEvent('refreshready', { detail: { bfConfigId: this.configId }}));
     }
 
     get sourceObjectLabelPlural() {
@@ -190,6 +207,11 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     
 
+    ownerFilterButtons = [
+        { label: LABEL_MY_DATA, value: 'my' },
+        { label: LABEL_ALL_DATA, value: 'all' }
+    ];
+
     selectedFields = [];
     availableFields = [];
     originalSelectedFields = [];
@@ -202,6 +224,8 @@ export default class LinkedObjectPreview extends LightningElement {
     previewField2;
     selectingSourceFields = false;
     selectingLinkedFields = false;
+    selectedOwnerFilter = 'all';
+    hasOwnerData = false;
 
     availableActions = [];
     selectedAction;
@@ -216,7 +240,11 @@ export default class LinkedObjectPreview extends LightningElement {
     getData() {
         this.isWorking = true;
         console.log('[linkedObjectPreview.getData] config id', this.linkedObjectConfigId);
-        getDataForPreview({configId: this.linkedObjectConfigId})
+        getDataForPreview({
+            configId: this.linkedObjectConfigId,
+            allLinkedData: this.selectedOwnerFilter == 'all',
+            userId: USER_ID
+        })
         .then(result => {
             console.log('[linkedObjectPreview.getData] result', result);
             const sourceFields = [];
@@ -325,7 +353,7 @@ export default class LinkedObjectPreview extends LightningElement {
                     });    
                 }
             });
-            newColumns.push({ type: 'action', typeAttributes: { rowActions: rowActions }});
+            newColumns.push({ type: 'action', typeAttributes: { rowActions: ROW_ACTIONS }});
             this.columns = [...newColumns];
             this.template.querySelector('.field-selector').hide();
             this.isWorking = true;
@@ -436,5 +464,16 @@ export default class LinkedObjectPreview extends LightningElement {
             this.dispatchEvent(evt);
 
         });
+    }
+
+    handleOwnerFilterButtonChange(event) {
+        this.selectedOwnerFilter = event.detail.value;        
+        console.log('[linkedObjectPreview.handleOwnerFilterButtonChange] selectedOwnerFilter', this.selectedOwnerFilter);
+
+        this.getData();
+        this.dispatchEvent(new CustomEvent('refreshready', {
+            configId: this.configId,
+            includeAllData: this.includeAllData == 'all'
+        }));
     }
 }

@@ -29,6 +29,9 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
     @api 
     infoText;
 
+    @api 
+    includeAllData = false;
+
     _sourceObjectRows;
     @api 
     get sourceObjectRows() {

@@ -526,13 +526,20 @@ public with sharing class LinkedObjectConfig_Controller {
     }
 
     @AuraEnabled 
-    public static Map<String, Object> getDataForPreview(String configId) {
+    public static Map<String, Object> getDataForPreview(String configId, Boolean allLinkedData, String userId) {
         Map<String, Object> data = new Map<String, Object>();
         System.debug('configId: ' + configId);
+        System.debug('allLinkedData: ' + allLinkedData);
+        
         if (configId == null) {
             data.put('error', 'No configuration found for Id [' + configId + ']');
             return data;
         }
+
+        if (String.isEmpty(userId)) {
+            userId = UserInfo.getUserId();
+        }
+        System.debug('userId: ' + userId);
 
         BF_Configuration__c bfConfig = [SELECT Id, Name, Source_Object__c, Linked_Object__c, Market__c, Source_Object_Record_Type__c, Source_Object_Record_Id__c, 
                                             (SELECT Id, Name, RecordTypeId, Object__c, FieldName__c, FieldValue__c, Operator__c, Field_List__c, Preview_Field_1__c, Preview_Field_2__c,
@@ -576,10 +583,11 @@ public with sharing class LinkedObjectConfig_Controller {
                     fieldList = 'Id,Name';
                 }
                 query = 'SELECT ' + fieldList + ' FROM ' + bfConfig.Source_Object__c;
+                
                 if (queryDetails.containsKey('whereClause')) {
-                    query += ' WHERE ' + queryDetails.get('whereClause');
+                    whereClause = ' WHERE ' + queryDetails.get('whereClause');
                 }
-                query += ' LIMIT 1000';
+                query += whereClause + ' LIMIT 1000';
 
                 System.debug('query: ' + query);
                 List<SObject> sourceObjectRows = Database.query(query);
@@ -663,6 +671,13 @@ public with sharing class LinkedObjectConfig_Controller {
             }
             whereClause += 'Market__c=:marketId';
         }
+        if (!allLinkedData && linkedObjectFields.containsKey('OwnerId')) {
+            if (String.isNotEmpty(whereClause)) {
+                whereClause += ' AND ';
+            }
+            whereClause += ' OwnerId =:userId';
+        }
+
 
         System.debug('whereClause: ' + whereClause);
         if (String.isNotEmpty(whereClause)) {
@@ -754,6 +769,7 @@ public with sharing class LinkedObjectConfig_Controller {
 
         System.debug('configId: ' + configId);
         System.debug('recordTypeId: ' + rtPreviewFieldList);
+        System.debug('fieldList: ' + fieldList);
         List<BF_Configuration_Item__c> items = [SELECT Id, Object__c, Field_List__c, Preview_Field_1__c, Preview_Field_2__c 
                                                   FROM BF_Configuration_Item__c 
                                                  WHERE BF_Configuration__c =:configId 
@@ -777,9 +793,9 @@ public with sharing class LinkedObjectConfig_Controller {
 
             String fldNames = '';
             for(String s :fieldList) {
-                if (s != 'Name') {
+                //if (s != 'Name') {
                     fldNames += s + ',';
-                }
+                //}
             }
             fldNames = fldNames.removeEnd(',');
             item.Field_List__c = fldNames;
@@ -981,6 +997,7 @@ public with sharing class LinkedObjectConfig_Controller {
             configItem.Operator__c = String.valueOf(item.get('operator'));
             configItem.Object_to_Count__c = String.valueOf(item.get('objectToCount'));
             configItem.Counter_Label__c = String.valueOf(item.get('counterLabel'));
+            configItem.Filter_Type__c = String.valueOf(item.get('filterType'));
 
             System.debug('configItem: '+ configItem);
             /*

@@ -9,3 +9,12 @@
 .text-medium {
     font-size: 1.25rem;
 }
+.nothing-to-show {
+    border: 1px solid #c9c9c9;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #C3846B;
+    color: white;
+    text-transform: uppercase;
+    font-weight: bolder;
+}

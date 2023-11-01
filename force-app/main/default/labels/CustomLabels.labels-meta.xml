@@ -16,4 +16,36 @@
         <shortDescription>PromotionsCreatedForActivity</shortDescription>
         <value>Created %0 new promotion(s) for activity %1</value>
     </labels>
+    <labels>
+        <fullName>All_Accounts</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>All Accounts</shortDescription>
+        <value>All Accounts</value>
+    </labels>
+    <labels>
+        <fullName>All_Data</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>All Data</shortDescription>
+        <value>All %0%</value>
+    </labels>
+    <labels>
+        <fullName>My_Data</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>My Data</shortDescription>
+        <value>My %0%</value>
+    </labels>
+    <labels>
+        <fullName>Nothing_To_Show</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Nothing To Show</shortDescription>
+        <value>Nothing to show</value>
+    </labels>
 </CustomLabels>
