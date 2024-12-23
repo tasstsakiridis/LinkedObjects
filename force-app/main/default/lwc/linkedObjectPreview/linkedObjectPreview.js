@@ -41,7 +41,6 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     set counters(value) {
         this._counters = value;
-        console.log('[linkedObjectPreview.set counters] counters', value);
     }
 
     _actions;
@@ -51,17 +50,21 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     set actions(value) {
         this._actions = value;
-        console.log('[linkedObjectPreview.set actions] actions', value);
+        console.log('[linkedObjectPreview.actions] value', value);
         if (value != undefined && value.length > 0) {
-            const actionsMap = value.map(a => {
-                return {
-                    label: a.actionLabel,
-                    name: a.id,
-                    value: a.id
+            let selectionActions = [];
+            let nsActions = [];
+            value.forEach(a => {
+                if (a.requiresSelection == undefined || a.requiresSelection == true) {
+                    selectionActions.push({ label: a.actionLabel, name: a.id, value: a.id });
+                } else {
+                    nsActions.push({ label: a.actionLabel, name: a.id, value: a.id });
                 }
             });
-            this.availableActions = [...actionsMap];
-            console.log('[linkedObjectPreview.set actions] availableActions', JSON.parse(JSON.stringify(this.availableActions)));
+            this.availableActions = [...selectionActions];
+            this.noSelectionActions = [...nsActions];
+            console.log('[linkedObjectPreview.actions] availableActions', this.availableActions);
+            console.log('[linkedObjectPreview.actions] noSelectionActions', this.noSelectionActions);
             if (this.linkedObjectColumns != undefined && this.linkedObjectColumns.length > 0) {
                 const actionsColumn = this.linkedObjectColumns.find(lc => lc.type == 'action');
                 if (actionsColumn == undefined) {
@@ -87,6 +90,7 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     set sourceObjectInfo(value) {
         this._sourceObjectInfo = value;
+        
         const sourceflds = [];
         if (value != undefined && value.fields != undefined) {
             Object.keys(value.fields).forEach(key => {
@@ -105,7 +109,6 @@ export default class LinkedObjectPreview extends LightningElement {
             });    
         }
         this.sourceObjectFields = sourceflds;
-        console.log('[linkedObjectPreview.set sourceObjectInfo] sourceObjectFields', this.sourceObjectFields);            
 
     }
 
@@ -122,7 +125,6 @@ export default class LinkedObjectPreview extends LightningElement {
         const flds = [];
 
         if (value != undefined && value.fields != undefined) {
-            console.log('[linkedObjectPreview] value', value == undefined ? '' : JSON.parse(JSON.stringify(value)));
             this.hasOwnerData = value.fields['OwnerId'] != undefined;
 
             Object.keys(value.fields).forEach(key => {
@@ -145,8 +147,6 @@ export default class LinkedObjectPreview extends LightningElement {
             }
         }
         this.linkedObjectFields = flds;
-        console.log('[linkedObjectPreview.set linkedObjectInfo] linkedObjectFields', this.linkedObjectFields);            
-        console.log('[linkedObjectPreview.set linkedObjectInfo] ownerFilterButtons', this.ownerFilterButtons);            
     }
 
 
@@ -181,7 +181,6 @@ export default class LinkedObjectPreview extends LightningElement {
 
     @api 
     refresh(configId) {
-        console.log('[linkedObjectPreview.refresh preview]');
         this.linkedObjectConfigId = configId;
         this.getData();
     }
@@ -197,12 +196,9 @@ export default class LinkedObjectPreview extends LightningElement {
         return this.linkedObjectInfo == undefined ? 'ROWS' : this.linkedObjectInfo.labelPlural;
     }
     get isBFConfig() {
-        console.log('[linkedObjectPreview.isBFConfig] recordType', this.recordType);
         return this.recordType == 'BF_Configuration__c';
     }
     get hasData() {
-        console.log('[linkedObjectPreview.hasData] sourceObjectData', this.sourceObjectData);
-        console.log('[linkedObjectPreview.hasData] linkedObjectData', this.linkedObjectData);
         return (this.sourceObjectData != undefined && this.sourceObjectData.length > 0) || (this.linkedObjectData != undefined && this.linkedObjectData.length > 0);
     }
     
@@ -228,6 +224,7 @@ export default class LinkedObjectPreview extends LightningElement {
     hasOwnerData = false;
 
     availableActions = [];
+    noSelectionActions = [];
     selectedAction;
 
     error;
@@ -239,14 +236,12 @@ export default class LinkedObjectPreview extends LightningElement {
     numberOfLinkedObjectRows
     getData() {
         this.isWorking = true;
-        console.log('[linkedObjectPreview.getData] config id', this.linkedObjectConfigId);
         getDataForPreview({
             configId: this.linkedObjectConfigId,
             allLinkedData: this.selectedOwnerFilter == 'all',
             userId: USER_ID
         })
         .then(result => {
-            console.log('[linkedObjectPreview.getData] result', result);
             const sourceFields = [];
             const linkedFields = [];
             this.error = undefined;            
@@ -281,8 +276,6 @@ export default class LinkedObjectPreview extends LightningElement {
 
             this.linkedSelectedFields = [...linkedFields];  
             this.sourceSelectedFields = [...sourceFields];
-            console.log('[linkedObjectPreview.getdata] linkedSelectedFields', this.linkedSelectedFields);
-            console.log('[linkedObjectPreview.getdata] sourceSelectedFields', this.sourceSelectedFields);
             this.previewField1 = result.previewField1;
             this.previewField2 = result.previewField2; 
             this.sourceObjectData = result.sourceObjectRows;   
@@ -302,7 +295,6 @@ export default class LinkedObjectPreview extends LightningElement {
 
     selectSourceObjectFieldsToDisplay(event) {
         try {
-            console.log('[linkedObjectPreview.selectFields] selectedFields', this.sourceObjectFields);     
             this.selectingSourceFields = true;       
             this.selectingLinkedFields = false;       
             this.availableFields = [...this.sourceObjectFields];
@@ -314,7 +306,6 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     selectLinkedObjectFieldsToDisplay(event) {
         try {
-            console.log('[linkedObjectPreview.selectFields] selectedFields', this.linkedObjectFields);            
             this.selectingLinkedFields = true;       
             this.selectingSourceFields = false;       
             this.availableFields = [...this.linkedObjectFields];
@@ -330,7 +321,6 @@ export default class LinkedObjectPreview extends LightningElement {
     }
     handleFieldsChange(event) { 
         this.selectedFields = event.detail.value;
-        console.log('[linkedObjectPreview.handleFieldsChange] selectedFields', this.selectedFields);
     }
     applyFieldSelections() {
         try {
@@ -357,23 +347,18 @@ export default class LinkedObjectPreview extends LightningElement {
             this.columns = [...newColumns];
             this.template.querySelector('.field-selector').hide();
             this.isWorking = true;
-            console.log('[linkedObjectPreview.applyFieldSelections] columns', this.columns);
             if (this.previewField1 && this.previewField1 != '' && this.selectedFields.indexOf(this.previewField1) < 0) {
                 this.previewField1 = '';
             }
             if (this.previewField2 && this.previewField2 != '' && this.selectedFields.indexOf(this.previewField2) < 0) {
                 this.previewField2 = '';
             }
-            console.log('[linkedObjectPreview.applyFieldSelections] selectedFields', this.selectedFields);
-            console.log('[linkedObjectPreview.applyFieldSelections] previewField1', this.previewField1);
-            console.log('[linkedObjectPreview.applyFieldSelections] previewField2', this.previewField2);
             updateConfigFieldList({configId: this.linkedObjectConfigId, 
                                     objectName: this.selectingLinkedFields ? this.linkedObjectInfo.apiName : this.sourceObjectInfo.apiName, 
                                     fieldList: this.selectedFields,
                                     previewField1: this.previewField1,
                                     previewField2: this.previewField2})
             .then(result => {
-                console.log('[linkedObjectPreview.updateConfigFieldList] result', result);
                 this.getData();
             })
             .catch(error => {
@@ -389,16 +374,12 @@ export default class LinkedObjectPreview extends LightningElement {
     handleRowAction(event) {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
-        console.log('[rowAction] actionName', actionName);
-        console.log('[rowAction] row', row);
     }
     handleRowSelection(event) {
         this.selectedRows = event.detail.selectedRows;
-        console.log('selectedRows', this.selectedRows);
     }
 
     updatePreviewField(event) {
-        console.log('[linkedObjectPreview.updatePreviewField] detail', JSON.parse(JSON.stringify(event.detail)));
         try {
             if (event.detail.index == '1') {
                 this.previewField1 = event.detail.fieldName;
@@ -427,15 +408,12 @@ export default class LinkedObjectPreview extends LightningElement {
         this.isWorking = true;
 
         this.selectedAction = this.actions.find(a => a.actionLabel == event.target.label);
-        console.log('[linkedObjectPreview.handleActionClick] action label', event.target.label);
-        console.log('[linkedObjectPreview.handleActionClick] selectedAction', this.selectedAction);
 
         const linkedRecordIds = this.selectedRows.map(r => r.Id);
         const inputs = {
             'sourceObjectRecordId': this.recordId,
             'linkedRecordIds' : linkedRecordIds
         };
-        console.log('[linkedObjectPreview.handleActionClick] inputs', inputs);
         callAction({
             className: this.selectedAction.actionClassName,
             actionName: this.selectedAction.actionMethodName,
@@ -443,7 +421,6 @@ export default class LinkedObjectPreview extends LightningElement {
             bfConfigId: this.bfConfigId,
             inputs: JSON.stringify(inputs)
         }).then(result => {
-            console.log('[linkedObjectPreview.callAction] result', result);
             this.setSelectedRows = [];
             this.isWorking = false;
 
@@ -468,7 +445,6 @@ export default class LinkedObjectPreview extends LightningElement {
 
     handleOwnerFilterButtonChange(event) {
         this.selectedOwnerFilter = event.detail.value;        
-        console.log('[linkedObjectPreview.handleOwnerFilterButtonChange] selectedOwnerFilter', this.selectedOwnerFilter);
 
         this.getData();
         this.dispatchEvent(new CustomEvent('refreshready', {

@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { getRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { getObjectInfo, getPicklistValuesByRecordType } from 'lightning/uiObjectInfoApi';
+import { refreshApex } from "@salesforce/apex";
 
 import getConfigForRecord from '@salesforce/apex/LinkedObjectConfig_Controller.getConfigForRecord';
 import createConfigForRecord from '@salesforce/apex/LinkedObjectConfig_Controller.createConfigForRecord';
@@ -9,6 +10,7 @@ import getRecordData from '@salesforce/apex/LinkedObjectConfig_Controller.getRec
 import saveItemConfiguration from '@salesforce/apex/LinkedObjectConfig_Controller.saveItemConfiguration';
 import getUserDetail from '@salesforce/apex/LinkedObjectConfig_Controller.getUserDetail';
 import deleteItem from '@salesforce/apex/LinkedObjectConfig_Controller.deleteItem';
+import getFieldsetDetails from '@salesforce/apex/LinkedObjectConfig_Controller.getFieldsetDetails';
 
 import OBJECT_BF_CONFIG from '@salesforce/schema/BF_Configuration__c';
 
@@ -96,11 +98,10 @@ export default class LinkedObjectConfig extends LightningElement {
     
     @wire(getObjectInfo, { objectApiName: '$sourceObject' })
     getSourceObjectInfo({error, data}) {
-        console.log('[linkedObjectConfig.getSourceObjectInfo] data',data);
-        console.log('[linkedObjectConfig.getSourceObjectInfo] error',error);
+        console.log('[getSourceObjectInfo] data', data);
         if (data) {
             this.error = undefined;
-            this.sourceObjectInfo = data;            
+            this.sourceObjectInfo = data;      
         } else if (error) {
             this.error = error;
             if (error.status == 400) {  // INVALID_TYPE - Object is not supported to give metadata describe info
@@ -120,8 +121,6 @@ export default class LinkedObjectConfig extends LightningElement {
             }
         }
 
-        console.log('[linkedObjectConfig.getSourceObjectInfo] sourceObjectInfo', this.sourceObjectInfo);
-        //console.log('[linkedObjectConfig.getSourceObjectInfo] sourceObjectFields', this.sourceObjectFields);
     };
     
     linkedObjectInfo;
@@ -129,8 +128,7 @@ export default class LinkedObjectConfig extends LightningElement {
     
     @wire(getObjectInfo, { objectApiName: '$linkedObject' })
     getLinkedObjectInfo({error, data}) {
-        console.log('[linkedObjectConfig.getLinkedObjectInfo] data',data);
-        console.log('[linkedObjectConfig.getLinkedObjectInfo] error',error);
+        console.log('[getLinkedObjectInfo] data', data);
         if (data) {
             this.error = undefined;
             this.linkedObjectInfo = data;
@@ -150,9 +148,55 @@ export default class LinkedObjectConfig extends LightningElement {
                 this.linkedObjectInfo = undefined;
             }
         }
-        console.log('[linkedObjectConfig.getLinkedObjectInfo] linkedObjectInfo', this.linkedObjectInfo);
     };
     
+    getAvailableFields() {
+        getFieldsetDetails({
+            sourceObject: this.sourceObject,
+            sourceObjectFieldsetName: this.bfConfig.SourceObject_Fieldset__c,
+            linkedObject: this.linkedObject,
+            linkedObjectFieldsetName: this.bfConfig.LinkedObject_Fieldset__c 
+        }).then(result => {
+            this.error = undefined;
+            try {
+                console.log('[getFieldsetDetails] result', result);
+            if (result.sourceObjectFields == undefined || result.sourceObjectFields.length == 0) {
+                let sourceflds = this.sourceObjectInfo == undefined ? [] : Object.values(this.sourceObjectInfo.fields).map(f => {
+                    return {
+                        type: f.dataType,
+                        apiName: f.apiName,
+                        label: f.label,
+                        value: f.apiName
+                    }
+                });
+                this.sourceObjectFields = sourceflds.slice(0, 10);
+            } else {
+                this.sourceObjectFields = result.sourceObjectFields;
+            }
+            if (result.linkedObjectFields == undefined || result.linkedObjectFields.length == 0) {
+                this.linkedObjectFields = this.linkedObjectInfo == undefined ? [] : Object.values(this.linkedObjectInfo.fields).map(f => {
+                    return {
+                        type: f.dataType,
+                        apiName: f.apiName,
+                        label: `${f.label} [${f.apiName}]`,
+                        value: f.apiName
+                    }
+                });
+            } else {
+                this.linkedObjectFields = result.linkedObjectFields;            
+            }
+            } catch(ex) {
+                console.log('[getAvailableFields] exception', ex);
+                this.sourceObjectFields = [];
+                this.linkedObjectFields = [];
+            }
+        }).catch(error => {
+            console.log('[linkedObjectConfig.getAvailableFields] error', error);
+            this.error = error;        
+            this.sourceObjectFields = undefined;
+            this.linkedObjectFields = undefined;
+        });
+    }
     /*
     picklistValuesMap;
     @wire(getPicklistValuesByRecordType, { objectApiName: OBJECT_BF_CONFIG , recordTypeId: '$recordTypeId' })
@@ -200,7 +244,6 @@ export default class LinkedObjectConfig extends LightningElement {
     isAdmin = false;
     @wire(getUserDetail)
     getWiredUsedDetail({data, error}) {
-        console.log('[linkedObjectConfig.getUserDetail] data', data);
         if (data) {
             this.userDetails = data.user;
             this.isAdmin = data.isAdmin;
@@ -212,11 +255,10 @@ export default class LinkedObjectConfig extends LightningElement {
             this.isAdmin = false;
         }
     }
-
+    
     @wire(getConfigForRecord, { recordId: '$recordId', type: 'Linked Objects'})
     getWiredConfigForRecord({data, error}) {
-        console.log('[linkedObjectConfig.getConfigForRecord] data', data);
-        console.log('[linkedObjectConfig.getConfigForRecord] error', error);
+        console.log('[getConfigForRecord] data', data);
         if (data) {
             this.hasConfig = true;
             this.bfConfig = data.config;   
@@ -227,7 +269,10 @@ export default class LinkedObjectConfig extends LightningElement {
                 if (data.theRecord_SObjectType != 'BF_Configuration__c') {
                     this.refreshPreview({detail: data.config.Id});
                 }
+
+                this.getAvailableFields();
             }
+
             this.theRecord_SObjectType = data.theRecord_SObjectType;
             this.filters = data.filters;
             this.marketFilters = data.marketFilters;
@@ -235,7 +280,6 @@ export default class LinkedObjectConfig extends LightningElement {
             this.marketCounters = data.marketCounters;
             this.actions = data.actions;
             this.marketActions = data.marketActions;
-            console.log('[linkedObjectConfig.getConfigForRecord] marketFilters, data.marketFilters', this.marketFilters, data.marketFilters);
             if (data.theRecord_SObjectType != 'BF_Configuration__c') {
                 this.getRecord(data.config == undefined);
             }
@@ -259,6 +303,7 @@ export default class LinkedObjectConfig extends LightningElement {
     }
 
     hasRefreshed = false;
+    /*
     connectedCallback() {
         console.log('[linkedObjectConfig.connectedCallback] recordId', this.recordId);
         
@@ -266,7 +311,7 @@ export default class LinkedObjectConfig extends LightningElement {
     renderedCallback() {
         console.log('[linkedObjectConfig.renderedCallback]');
     }
-
+    */
     /*
     getConfig() {
         getConfigForRecord({
@@ -295,7 +340,6 @@ export default class LinkedObjectConfig extends LightningElement {
     */
 
     createConfig() {
-        console.log('[linkedObjectConfig.createConfig] theRecord', this.theRecord);
         createConfigForRecord({
             recordId: this.recordId,
             sourceObject: this.sourceObject,
@@ -304,7 +348,6 @@ export default class LinkedObjectConfig extends LightningElement {
             marketName: this.theRecord.Market__c == undefined ? '' : this.theRecord.Market__c
         })
         .then(result => {
-            console.log('[linkedObjectConfig.createConfig] result',JSON.parse(JSON.stringify(result)));
             this.bfConfig = result.config;   
             this.bfConfigId = result.config.Id;   
             this.marketFilters = [...result.marketFilters];
@@ -313,6 +356,7 @@ export default class LinkedObjectConfig extends LightningElement {
             this.actions = [...result.actions];
             this.filters = [...result.filters];
             this.counters = [...result.counters];
+            this.getAvailableFields();
             this.refreshPreview({detail: result.config.Id});          
         })
         .catch(error => {
@@ -325,7 +369,6 @@ export default class LinkedObjectConfig extends LightningElement {
     getRecord(createConfig) {
         getRecordData({recordId: this.recordId})
         .then(result => {
-            console.log('[linkedObjectConfig.getRecord] result', result);
             this.theRecord = result.theRecord;
             this.theRecordType = result.theRecordType;
             if (createConfig) {
@@ -346,7 +389,6 @@ export default class LinkedObjectConfig extends LightningElement {
     }
 
     setFieldOptions(picklistValues) {
-        console.log('[setFieldOptions] picklistValues', picklistValues);
         Object.keys(picklistValues).forEach(picklist => {            
             if (picklist === 'Source_Object__c') {
                 this.sourceObjectOptions = this.setFieldOptionsForField(picklistValues, picklist);                
@@ -359,14 +401,12 @@ export default class LinkedObjectConfig extends LightningElement {
     }
     
     setFieldOptionsForField(picklistValues, picklist) {        
-        console.log('[setFieldOptionsForField] picklist field', picklist);
         return picklistValues[picklist].values.map(item => ({
             label: item.label, value: item.value
         }));
     }
 
     addExistingItem(event) {
-        console.log('[linkedObjectConfig.addExistingItem] event.detail',event.detail);        
         const item = {...event.detail.item};
         item.index = event.detail.index;
         item.isEditing = false;
@@ -376,7 +416,6 @@ export default class LinkedObjectConfig extends LightningElement {
                 const actions = [...this.actions];
                 actions.push(item);
                 this.actions = [...actions];
-                console.log('[linkedObjectConfig.addExistingItem] updated actions', JSON.parse(JSON.stringify(this.actions)));
                 break;
 
             case 'Filter':
@@ -394,7 +433,6 @@ export default class LinkedObjectConfig extends LightningElement {
 
     }
     addNewItem(event) {
-        console.log('[linkedObjectConfig.addNewItem] event.detail',event.detail);        
         try {
             const item = {
                 id: '',
@@ -413,18 +451,11 @@ export default class LinkedObjectConfig extends LightningElement {
                 isEditing: true
             };
             
-            console.log('[linkedObjectConfig.addNewItem] actions', this.actions);
-            console.log('[linkedObjectConfig.addNewItem] filters', this.filters);
-            console.log('[linkedObjectConfig.addNewItem] counters', this.counters);
-            console.log('[linkedObjectConfig.addNewItem] sourceObject', this.sourceObject);
-            console.log('[linkedObjectConfig.addNewItem] linkedObject', this.linkedObject);
-            
             switch (event.detail.itemType) {
                 case 'Action':
                     const actions = [...this.actions];
                     actions.push(item);
                     this.actions = [...actions];
-                    console.log('[linkedObjectConfig.addNewItem] updated actions', JSON.parse(JSON.stringify(this.actions)));
                     break;
 
                 case 'Filter':
@@ -445,7 +476,6 @@ export default class LinkedObjectConfig extends LightningElement {
         }
     }
     updateConfigItem(event) {
-        console.log('[linkedObjectConfig.updateConfigItem] event.detail',JSON.parse(JSON.stringify(event.detail)));
         this.isWorking = true;
 
         saveItemConfiguration({
@@ -453,14 +483,12 @@ export default class LinkedObjectConfig extends LightningElement {
             item: event.detail.item
         })
         .then(result => {
-            console.log('[linkedObjectConfig.updateConfigItem] result', result);
             if (result.status == 'SUCCESS') {
                 switch (result.item.itemType) {
                     case 'Action':                    
                         const actions = [...this.actions];
                         actions[result.item.index] = result.item;
                         this.actions = [...actions];
-                        console.log('[linkedObjectConfig.updateConfigItem] actions', JSON.parse(JSON.stringify(this.actions)));
                         break;
     
                     case 'Filter':
@@ -489,7 +517,6 @@ export default class LinkedObjectConfig extends LightningElement {
         });
     }
     deleteConfigItem(event) {
-        console.log('[linkedObjectConfig.deleteConfigItem] event.detail',JSON.parse(JSON.stringify(event.detail)));
         const item = event.detail.item;
         if (item.id != '') {
             deleteItem({itemId: item.id, itemType: item.itemType, index: item.index})
@@ -507,10 +534,8 @@ export default class LinkedObjectConfig extends LightningElement {
         switch (itemType) {
             case 'Action':                    
                 const actions = [...this.actions];
-                console.log('[linkedObjectConfig.deleteConfigItem] actions', actions);
                 actions.splice(itemIndex, 1);
                 this.actions = [...actions];
-                console.log('[linkedObjectConfig.deleteConfigItem] actions', JSON.parse(JSON.stringify(this.actions)));
                 break;
 
             case 'Filter':
@@ -539,15 +564,10 @@ export default class LinkedObjectConfig extends LightningElement {
         }
     }
     refreshPreview(event) {
-        console.log('[linkedObjectConfig.refreshPreview] event.detail', event == undefined ? 'undefined' : event.detail);
-        console.log('[linkedObjectConfig.refreshPreview] configId', this.bfConfigId);
-        console.log('[linkedobjectconfig.refreshPreview] sourceObjectInfo', this.sourceObjectInfo == undefined ? this.sourceObjectInfo : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
-        console.log('[linkedobjectconfig.refreshPreview] linkedObjectInfo', this.linkedObjectInfo == undefined ? this.linkedObjectInfo : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
         let includeAllData = false;
         if (this.bfConfigId == undefined && event != undefined) { this.bfConfigId = event.detail.configId; }
         try {
             const previewElement = this.template.querySelector("c-linked-object-preview");
-            console.log('[linkedObjectConfig.refreshPreview] previewElement', previewElement);
             if (previewElement != undefined) {
                 previewElement.refresh(this.bfConfigId);
                 this.hasRefreshed = true;    

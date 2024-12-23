@@ -72,6 +72,14 @@
                                             </template>
                                         </template>    
                                     </template>
+                                    <template if:true={noSelectionActions}>
+                                        <template if:true={noSelectionActions.length}>
+                                            <template for:each={noSelectionActions} for:item="action">
+                                                <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand"
+                                                    class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                            </template>
+                                        </template>
+                                    </template>
                                     <lightning-button-icon icon-name="utility:list" onclick={selectSourceObjectFieldsToDisplay}></lightning-button-icon>
                                 </lightning-button-group>
     
@@ -100,6 +108,14 @@
                                                                 onchange={handleActionButtonChange}>
                                         </lightning-radio-group>
                                     -->
+                                    </template>
+                                </template>
+                                <template if:true={noSelectionActions}>
+                                    <template if:true={noSelectionActions.length}>
+                                        <template for:each={noSelectionActions} for:item="action">
+                                            <lightning-button key={action.id} label={action.label} data-id={action.id} variable="brand"
+                                                class="slds-m-right_small" onclick={handleActionClick}></lightning-button>
+                                        </template>
                                     </template>
                                 </template>
                                 <template if:true={hasOwnerData}>

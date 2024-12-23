@@ -29,10 +29,16 @@ export default class LinkedObjectItemList extends LightningElement {
     sourceObjectInfo;
 
     @api 
+    sourceObjectFields;
+    
+    @api 
     linkedObject;
 
     @api
     linkedObjectInfo;
+
+    @api 
+    linkedObjectFields;
 
     @api 
     market;
@@ -55,7 +61,6 @@ export default class LinkedObjectItemList extends LightningElement {
         return this._bfConfig;
     }
     set bfConfig(value) {
-        console.log('[linkedObjectItemList.set bfConfig] value', value == undefined ? value : JSON.parse(JSON.stringify(value)));
         this._bfConfig = value;
         /*
         if (value == undefined) {
@@ -65,7 +70,6 @@ export default class LinkedObjectItemList extends LightningElement {
         }
         console.log('[linkedObjectFilterList.set bfconfig] filters', this.filters);
         */
-        console.log('[linkedObjectItemList.set bfConfig] linkedObjectInfo', this.linkedObjectInfo);
     }
 
     _items = [];
@@ -74,7 +78,6 @@ export default class LinkedObjectItemList extends LightningElement {
         return this._items;
     }
     set items(value) {
-        console.log('[linkedObjectItemList.set items] value', value == undefined ? value : JSON.parse(JSON.stringify(value)));
         this._items = value;
     }
 
@@ -89,12 +92,6 @@ export default class LinkedObjectItemList extends LightningElement {
     }
 
     addNewItem() {
-        console.log('[linkedObjectItemList.addNewItem] type', this.itemType);
-        console.log('[linkedObjectItemList.addNewItem] itemType', this.itemType);
-        console.log('[linkedObjectItemList.addNewItem] sourceObject', this.sourceObject);
-        console.log('[linkedObjectItemList.addNewItem] sourceObjectInfo', this.sourceObjectInfo);
-        console.log('[linkedObjectItemList.addNewItem] linkedObject', this.linkedObject);
-        console.log('[linkedObjectItemList.addNewItem] linkedObjectInfo', this.linkedObjectInfo);
         try {
             this.dispatchEvent(new CustomEvent('addnewitem', { 
                 detail: {
@@ -113,14 +110,12 @@ export default class LinkedObjectItemList extends LightningElement {
         }catch(ex) {
             console.log('[linkedObjectItemList.addNewFilter] exception', ex);
         }
-        //console.log('[linkedObjectItemList.addNewFilter] items', this.items);
         
     }
 
     handleMenuSelection(event) {
         try {
             const selectedButton = event.detail.value;
-            console.log('[linkedObjectItemList.handleMenuSelection] selectedButton', selectedButton);
             switch (selectedButton) {
                 case 'addNew':
                     this.addNewItem();
@@ -128,8 +123,6 @@ export default class LinkedObjectItemList extends LightningElement {
 
                 default:
                     const marketItem = this.marketItems.find(mi => mi.id == selectedButton);
-                    console.log('[linkedObjectItemList.handleMenuSelection] marketItems', this.marketItems);
-                    console.log('[linkedObjectItemList.handleMenuSelection] marketItem', marketItem);
                     this.dispatchEvent(new CustomEvent('addexistingitem', {
                         detail: {
                             itemType: this.itemType,
@@ -178,16 +171,13 @@ export default class LinkedObjectItemList extends LightningElement {
         try {
             const index = event.detail;   
             const itemToRemove = this.items.slice(index, index+1)[0];
-            console.log('[linkedObjectItemList.removeItem] itemToRemove.Id', itemToRemove.Id);
             if (itemToRemove.Id != undefined && itemToRemove.Id != '') {
                 this.itemsToDelete.push(itemToRemove);
             }
             const splicedItems = [];
             this.items.splice(index, 1);
-            console.log('[linkedObjectItemList.removeItem] items spliced', splicedItems);
 
             this.items.forEach(f => {
-                console.log('[linkedObjectItemList.removeItem] f', f);
                 const uf = {...f};
                 if (f.Index__c > index) {
                     uf.Index__c--;
@@ -197,11 +187,6 @@ export default class LinkedObjectItemList extends LightningElement {
             });
             this.items = [...splicedItems];
             
-            console.log('[linkedObjectItemList.removeItem] index', index);
-            console.log('[linkedObjectItemList.removeItem] items', this.items);
-            console.log('[linkedObjectItemList.removeItem] itemToRemove', itemToRemove);
-            console.log('[linkedObjectItemList.removeItem] itemsToDelete', this.itemsToDelete);
-
             if (itemToRemove.id != undefined && itemToRemove.id.length > 0) {
                 deleteItemConfiguration({ itemId: itemToRemove.id })
                 .then(result => {
@@ -218,7 +203,6 @@ export default class LinkedObjectItemList extends LightningElement {
 
     }
     updateItem(event) {
-        console.log('[linkedObjectItemList.updateItem] event', JSON.parse(JSON.stringify(event.detail)));
 /*
         try {
             const item = event.detail.item;

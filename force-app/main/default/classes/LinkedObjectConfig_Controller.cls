@@ -98,11 +98,11 @@ public with sharing class LinkedObjectConfig_Controller {
             result.put('theRecord_SObjectType', dsr.getName());
 
             Boolean hasFilters = false;
-            query = 'SELECT Id, Name, Source_Object__c, Linked_Object__c, Item_Config_Logic__c, Market__c, Source_Object_Record_Type__c, Source_Object_Record_Id__c, ';
+            query = 'SELECT Id, Name, Source_Object__c, Linked_Object__c, Item_Config_Logic__c, Market__c, Source_Object_Record_Type__c, Source_Object_Record_Id__c, SourceObject_Fieldset__c, LinkedObject_Fieldset__c, ';
             query += '(SELECT Id, Name, Label__c, RecordTypeId, RecordType.Name, BF_Configuration__c, Object__c, FieldName__c, FieldValue__c, Operator__c, ';
             query += ' Index__c, Is_Filter__c, Object_to_Count__c, Field_Name_to_Query__c, Counter_Label__c, Is_Counter__c, Preview_Field_1__c, Preview_Field_2__c, ';
             query += ' Is_Action__c, Is_Field_List__c, Action_Type__c, Action_Label__c, Action_Class_Name__c, Action_Method_Name__c, Action_Flow_Name__c, FieldType__c, ';
-            query += ' Filter_Type__c, Referenced_Object__c, Referenced_Field__c';
+            query += ' Filter_Type__c, Referenced_Object__c, Referenced_Field__c, Requires_Selection__c';
             query += ' FROM BF_Configuration_Items__r WHERE Auto_Add__c = FALSE ORDER BY RecordTypeId, Index__c)';
             query += ' FROM BF_Configuration__c';
             query += ' WHERE ';
@@ -167,6 +167,7 @@ public with sharing class LinkedObjectConfig_Controller {
                             'actionMethodName' => configItem.Action_Method_Name__c,
                             'actionFlowName' => configItem.Action_Flow_Name__c,
                             'objectToCount' => configItem.Object_to_Count__c,
+                            'requiresSelection' => configItem.Requires_Selection__c,
                             'counterLabel' => String.isEmpty(configItem.Counter_Label__c) ? configItem.Object_to_Count__c + '.' + configItem.FieldName__c : configItem.Counter_Label__c
                         };
 
@@ -253,6 +254,18 @@ public with sharing class LinkedObjectConfig_Controller {
             String rtCounter = rtItemList.get('Counter').getRecordTypeId();
             String rtPreviewFieldList = rtItemList.get('Preview Field List').getRecordTypeId();
 
+            BF_Configuration__c marketConfig = [SELECT Id, Name, SourceObject_Fieldset__c, LinkedObject_Fieldset__c, 
+                                                    (SELECT Id, Name, Object__c, FieldName__c, FieldValue__c, Operator__c, Filter_Type__c, 
+                                                            Referenced_Object__c, Referenced_Field__c, FieldLabel__c,
+                                                            FieldOptions__c, Action_Class_Name__c, Action_Method_Name__c, Action_Flow_Name__c,
+                                                            Action_Filter__c, RecordTypeId, FieldType__c, Index__c, Action_Label__c, Requires_Selection__c
+                                                        FROM BF_Configuration_Items__r WHERE Auto_Add__c = true)
+                                                FROM BF_Configuration__c
+                                                WHERE Source_Object__c =:sourceObject 
+                                                  AND Linked_Object__c =:linkedObject 
+                                                  AND Market__c =:marketId
+                                                  AND Source_Object_Record_Id__c = NULL];
+            /*
             List<BF_Configuration_Item__c> marketConfigs = [SELECT Id, Name, Object__c, FieldName__c, FieldValue__c, Operator__c, 
                                                                 Filter_Type__c, Referenced_Object__c, Referenced_Field__c, FieldLabel__c,
                                                                 FieldOptions__c, Action_Class_Name__c, Action_Method_Name__c, Action_Flow_Name__c,
@@ -263,6 +276,7 @@ public with sharing class LinkedObjectConfig_Controller {
                                                               AND BF_Configuration__r.Market__c =:marketId
                                                               AND BF_Configuration__r.Source_Object_Record_Id__c = NULL
                                                               AND Auto_Add__c = true];
+            */
 
             BF_Configuration__c config = new BF_Configuration__c();
             config.RecordTypeId = rtConfigId;
@@ -270,6 +284,9 @@ public with sharing class LinkedObjectConfig_Controller {
             config.Linked_Object__c = linkedObject;
             config.Source_Object_Record_Id__c = recordId;
             config.Market__c = marketId;
+            config.LinkedObject_Fieldset__c = marketConfig.LinkedObject_Fieldset__c;
+            config.SourceObject_Fieldset__c = marketConfig.SourceObject_Fieldset__c;
+            //config.Fieldset__c = marketConfig == null ? '' : marketConfig.Fieldset__c;
             insert config;   
             System.debug('config.Id: ' + config.Id);
 
@@ -287,7 +304,7 @@ public with sharing class LinkedObjectConfig_Controller {
             filters.add(filter1);
 
             Integer index = 1;
-            for(BF_Configuration_Item__c bfci : marketConfigs) {
+            for(BF_Configuration_Item__c bfci : marketConfig.BF_Configuration_Items__r) {
                 BF_Configuration_Item__c newItem = new BF_Configuration_Item__c();
                 newItem.BF_Configuration__c = config.Id;
                 newItem.RecordTypeId = bfci.RecordTypeId;
@@ -302,10 +319,12 @@ public with sharing class LinkedObjectConfig_Controller {
                 newItem.Action_Filter__c = bfci.Action_Filter__c;
                 newItem.Action_Method_Name__c = bfci.Action_Method_Name__c;
                 newItem.Action_Flow_Name__c = bfci.Action_Flow_Name__c;
+                newItem.Label__c = bfci.FieldLabel__c;
                 newItem.FieldLabel__c = bfci.FieldLabel__c;
                 newItem.Filter_Type__c = bfci.Filter_Type__c;
                 newItem.Referenced_Field__c = bfci.Referenced_Field__c;
                 newItem.Referenced_Object__c = bfci.Referenced_Object__c;
+                newItem.Requires_Selection__c = bfci.Requires_Selection__c;
                 filters.add(newItem);  
 
                 index++;              
@@ -414,6 +433,68 @@ public with sharing class LinkedObjectConfig_Controller {
         }
 
         return result;
+    }
+
+    @AuraEnabled 
+    public static Map<String, Object> getFieldsetDetails(String sourceObject, String sourceObjectFieldsetName, String linkedObject, String linkedObjectFieldsetName) {
+        Map<String, Object> result = new Map<String, Object>();
+
+        System.debug('sourceObject: ' + sourceObject + ', sourceObjectFieldset: ' + sourceObjectFieldsetName);
+        System.debug('linkedObject: ' + linkedObject + ', linkedObjectFieldset: ' + linkedObjectFieldsetName);
+        Map<String, Schema.SObjectType> allDescribes = Schema.getGlobalDescribe();
+        if (allDescribes.containsKey(sourceObject)) {
+            Schema.DescribeSObjectResult dsr = allDescribes.get(sourceObject).getDescribe();
+            List<Map<String, Object>> sourceObjectFields = getObjectFields(dsr, sourceObject, sourceObjectFieldsetName);
+            result.put('sourceObjectFields', sourceObjectFields);
+        } else {
+            result.put('status', 'ERROR');
+            result.put('message', 'Source Object ' + sourceObject + ' not found');
+        }
+
+        if (allDescribes.containsKey(linkedObject)) {
+            Schema.DescribeSObjectResult dsr = allDescribes.get(linkedObject).getDescribe();
+            List<Map<String, Object>> linkedObjectFields = getObjectFields(dsr, linkedObject, linkedObjectFieldsetName);
+            result.put('linkedObjectFields', linkedObjectFields);
+        } else {
+            result.put('status', 'ERROR');
+            result.put('message', 'Linked Object ' + linkedObject + ' not found');
+        }
+
+        return result;
+    }
+
+    private static List<Map<String, Object>> getObjectFields(Schema.DescribeSObjectResult dsr, String objectName, String fieldsetName) {
+        List<Map<String, Object>> fields = new List<Map<String, Object>>();
+        Map<String, Schema.FieldSet> fsMap = dsr.fieldSets.getMap();
+        Map<String, Schema.SObjectField> allFields = dsr.fields.getMap();
+        System.debug('objectName: ' + objectName + ', fieldsetName: ' + fieldsetName);
+        for(String s : fsMap.keySet()) {
+            System.debug('fsmap fieldset: ' + s);
+        }
+        if (fsMap.containsKey(fieldsetName)) {
+            Schema.FieldSet fs = fsMap.get(fieldsetName);
+            for(Schema.FieldSetMember fsm : fs.getFields()) {
+                Schema.DescribeFieldResult dfr = allFields.get(fsm.getFieldPath()).getDescribe();
+                Map<String, Object> fld = new Map<String, Object>{
+                    'value' => dfr.getName(),
+                    'apiName' => dfr.getName(),
+                    'label' => dfr.getLabel() + '[' + dfr.getName() + ']',
+                    'type' => dfr.getType().name(),
+                    'displayType' => dfr.getType().name(),
+                    'isCalculate' => dfr.isCalculated(),
+                    'isAccessible' => dfr.isAccessible(),
+                    'isUpdateable' => dfr.isUpdateable(),
+                    'isRequired' => dfr.isNillable(),
+                    'referenceTargetField' => dfr.getReferenceTargetField(),
+                    'relationshipName' => dfr.getRelationshipName()
+                };
+
+                fields.add(fld);
+            }
+
+        }
+
+        return fields;
     }
 
     @AuraEnabled 

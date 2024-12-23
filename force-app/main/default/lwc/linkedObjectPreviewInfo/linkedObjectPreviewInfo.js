@@ -62,7 +62,6 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
     }
     set counters(value) {
         this._counters = value;
-        console.log('[linkedObjectPreviewInfo.set counters] counters', value);
     }
 
     _fields;
@@ -74,7 +73,6 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
     set fields(value) {
         this._fields = value;
         const options = [];
-        console.log('[linkedObjectPreviewInfo.set fields] fieldObjectInfo', this.fieldObjectInfo);
         if (this.fieldObjectInfo != undefined && this.fieldObjectInfo.data != undefined) {
             this._fields.forEach(fld => {
                 const field = this.fieldObjectInfo.data.fields[fld];
@@ -146,7 +144,6 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
 
     handleFieldSelection(event) {
         this.selectedField = event.detail.value;
-        console.log('[linkedObjectPreviewInfo.handleFieldSelection] selectedField', this.selectedField);
         this.dispatchEvent(new CustomEvent('fieldupdate', { detail: { fieldName: this.selectedField, index: this.index }}));
     }
 
@@ -157,13 +154,9 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
             return;
         }
 
-        console.log('[linkedObjectPreviewInfo.getFieldInfo] fieldOptions', this.fieldOptions);
         const fld = this.fieldOptions.find(f => f.value == this.selectedField);
-        console.log('[linkedObjectPreviewInfo.getFieldInfo] fld', fld);
         if (fld) {
-            console.log('[linkedObjectPreviewInfo.getFieldInfo] fields', this.fields);
             const detailsMap = new Map();
-            console.log('[linkedObjectPreviewInfo.getFieldInfo] selectedField', this.selectedField);
             this.linkedObjectRows.map(row => {
                 let counter = 0; 
                 let fieldValue = row[this.selectedField];
@@ -178,9 +171,7 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
             this.title = fld.label;
             this.infoText = detailsMap.size;
         } else if (this.counters != undefined) {
-            console.log('[linkedObjectPreviewInfo.getFieldInfo] counters', JSON.parse(JSON.stringify(this.counters)));
             const counter = this.counters.find(ctr => ctr.id == this.selectedField);
-            console.log('[linkedObjectPreviewInfo.getFieldInfo] counter', counter);
             if (counter) {
                 this.title = counter.counterLabel;
                 if (counter.objectToCount == this.sourceObject) {
@@ -201,7 +192,6 @@ export default class LinkedObjectPreviewInfo extends LightningElement {
                     .then(result => {
                         this.error = undefined;
                         this.infoText = result.count;
-                        console.log('[linkedObjectPreviewInfo.getCount] result', JSON.parse(JSON.stringify(result)));
                     })
                     .catch(error => {
                         this.error = error;

@@ -75,13 +75,9 @@ export default class LinkedObjectItem extends LightningElement {
         return this._item;
     }
     set item(value) {
-        console.log('[linkedObjectItem.set item] value', value);
-        console.log('[linkedObjectItem.set item] sourceObject', this.sourceObject);
-        console.log('[linkedObjectItem.set item] sourceObjectInfo', this.sourceObjectInfo);
-        console.log('[linkedObjectItem.set item] linkedObject', this.sourceObject);
-        console.log('[linkedObjectItem.set item] linkedObjectInfo', this.sourceObjectInfo);
         this._item = value;
         this.isEditing = value.isEditing;
+        console.log('[linkedObjectItem.item] set', value);
         if (value != undefined) {
             this.itemIndex = value.index;
             this.itemType = value.itemType;
@@ -121,7 +117,10 @@ export default class LinkedObjectItem extends LightningElement {
     @api
     linkedObjectInfo;
 
+    @api
     sourceObjectFields;
+
+    @api
     linkedObjectFields;
 
     @api 
@@ -183,15 +182,6 @@ export default class LinkedObjectItem extends LightningElement {
         return _title;
     }
     get subTitle() {
-        console.log('[linkObjectItem.subTitle] item', JSON.parse(JSON.stringify(this.item)));
-        console.log('[linkedObjectItem.subTitle] actionFlowName', this.actionFlowName);
-        console.log('[linkedObjectItem.subTitle] actionClassName', this.actionClassName);
-        console.log('[linkedObjectItem.subTitle] actionMethodName', this.actionMethodName);
-        console.log('[linkedObjectItem.subTitle] filterType', this.filterType);
-        console.log('[linkedObjectItem.subTitle] operator', this.operator);
-        console.log('[linkedObjectItem.subTitle] referencedObject', this.referencedObject);
-        console.log('[linkedObjectItem.subTitle] referencedField', this.referencedField);
-        console.log('[linkedObjectItem.subTitle] fieldValue', this.fieldValue);
         var _subtitle = '';
         switch (this.item.itemType) {
             case 'Action':
@@ -222,9 +212,6 @@ export default class LinkedObjectItem extends LightningElement {
         return this._objectName;
     }
     set objectName(value) {
-        console.log('[linkedObjectItem.setObject] value', value);
-        //console.log('[linkedObjectFilterDetail.setObject] sourceObjectInfo',this.sourceObjectInfo == undefined ? this.sourceObjectInfo : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
-        //console.log('[linkedObjectFilterDetail.setObject] linkedObjectInfo',this.linkedObjectInfo == undefined ? this.linkedObjectInfo : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
         //this.isWorking = true;
         this._objectName = value;
         if (value == this.linkedObject) {
@@ -233,14 +220,13 @@ export default class LinkedObjectItem extends LightningElement {
             this.linkedObjectSelected = false;
         }
         try {
-            console.log('[linkedObjectItem.objectName] sourceObjectFields', this.sourceObjectFields);
-            console.log('[linkedObjectItem.objectName] linkedObjectFields', this.linkedObjectFields);
             if (this.isFilter) {
                 if (this.sourceObject == value) {
                     this.availableFields = [...this.sourceObjectFields];
                 } else {
                     this.availableFields = [...this.linkedObjectFields];
                 }    
+                console.log('[linkedObjectItem.objectName set] availableFields', this.availableFields);
             }
             //if (this.sourceObjectInfo != undefined && this.linkedObjectInfo != undefined) {
                 /*
@@ -292,11 +278,8 @@ export default class LinkedObjectItem extends LightningElement {
     set fieldName(value) {
         try {
             this._fieldName = value;
-            console.log('[linkedObjectItem.set fieldName] value', value);
-            if (value != undefined && this.availableFields != undefined) {
+            if (value != undefined && value != '' && this.availableFields != undefined) {                
                 const fld = this.objectName == this.sourceObject ? this.sourceObjectInfo.fields[value] : this.linkedObjectInfo.fields[value];
-                console.log('fld', JSON.parse(JSON.stringify(fld)));
-                console.log('datatype', fld.dataType);
 
                 switch(fld.dataType) {
                     case "Boolean":
@@ -319,10 +302,10 @@ export default class LinkedObjectItem extends LightningElement {
                     default:    
                         this.setFieldType("Text");
                         break;            
-                }
+                }                
             }
         }catch(ex) {
-            console.log('[linkedObjectItem.handleFieldNameChange] exception', ex);
+            console.log('[linkedObjectItem.fieldName.set] exception', ex);
         }
     }
     
@@ -348,17 +331,14 @@ export default class LinkedObjectItem extends LightningElement {
     relatedObjects = new Map();
 
     connectedCallback() {
-        console.log('[linkedObjectItem.connectedCallback] sourceObject, linkedObject', this.sourceObject, this.linkedObject);
-        console.log('[linkedObjectItem.connectedCallback] sourceObjectInfo', this.sourceObjectInfo == undefined ? 'undefined' : JSON.parse(JSON.stringify(this.sourceObjectInfo)));
-        console.log('[linkedObjectItem.connectedCallback] linkedObjectInfo', this.linkedObjectInfo == undefined ? 'undefined' : JSON.parse(JSON.stringify(this.linkedObjectInfo)));
         let options = [];
         let relatedObjectAPINames = [];
         this.relatedObjects.clear();
-
-
+        
         if (this.sourceObjectInfo != undefined) {
             options.push({label: this.sourceObjectInfo.label, value: this.sourceObject});
-            
+
+            /*
             const sourceflds = [];
             Object.keys(this.sourceObjectInfo.fields).forEach(key => {
                 const fld = this.sourceObjectInfo.fields[key];
@@ -385,11 +365,11 @@ export default class LinkedObjectItem extends LightningElement {
                 return 0; 
             });
             this.sourceObjectFields = sourceflds;
-            
+            */
         }
         if (this.linkedObjectInfo != undefined) {
             options.push({label: this.linkedObjectInfo.label, value: this.linkedObject});
-            
+            /*
             const linkedflds = [];
             console.log('linkedObjectInfo.fields keys', Object.keys(this.linkedObjectInfo.fields));
             Object.keys(this.linkedObjectInfo.fields).forEach(key => {
@@ -416,15 +396,14 @@ export default class LinkedObjectItem extends LightningElement {
                 return 0; 
             });
             this.linkedObjectFields = linkedflds;
-            
+            */
         } 
         
         this.objectOptions = [...options];
-        this.availableFields = this.sourceObjectFields;
         this.relatedObjectList = [...relatedObjectAPINames];
+        console.log('[linkedObjectItem.connectedCallback] availableFields', this.availableFields);
         //this.object = this.sourceObject;
         //this.fieldTypeText = true;
-        console.log('[linkedObjectItem.connectedCallback] objectOptions', this.objectOptions);
     }
 
     handleObjectChange(event) {
@@ -432,7 +411,6 @@ export default class LinkedObjectItem extends LightningElement {
     }
     handleFieldNameChange(event) {
         this.fieldName = event.detail.value;
-        console.log('[linkedObjectItem.handleFieldNameChange] fieldname', this.fieldName);
     }
     handleFieldTypeChange(event) {
         this.fieldType = event.detail.value;
@@ -448,7 +426,6 @@ export default class LinkedObjectItem extends LightningElement {
         this.fieldValue = event.detail.value;
     }    
     setFieldType(fieldType) {
-        console.log('[linkedObjectItem.setFieldType] fieldType', fieldType);
         this.fieldTypeDateTime = false;
         this.fieldTypeBoolean = false;
         this.fieldTypeText = false;
@@ -482,7 +459,6 @@ export default class LinkedObjectItem extends LightningElement {
         this.actionLabel = event.detail.value;
     }
     handleActionTypeChange(event) {
-        console.log('[linkedObjectItem.handleActionTypeChange] value', event.detail.value);
         this.actionType = event.detail.value;
     }
     handleActionClassNameChange(event) {
@@ -510,7 +486,6 @@ export default class LinkedObjectItem extends LightningElement {
         }
     }
     applyChanges() {
-        console.log('[linkedObjectItem.applyChanges]');
         try {
             const item = {
                 id: this.item.id,
@@ -531,7 +506,6 @@ export default class LinkedObjectItem extends LightningElement {
                 counterLabel: this.counterLabel,
                 isEditing: false
             };
-            console.log('[linkedObjectItem.applyChanges] item', item);
 
             const ev = new CustomEvent('update',
             {
