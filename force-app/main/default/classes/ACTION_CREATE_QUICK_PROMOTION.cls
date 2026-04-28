@@ -35,7 +35,7 @@ public class ACTION_CREATE_QUICK_PROMOTION implements Callable {
                 accountIds.add(String.valueOf(o));
             }
             
-            Promotion_Activity__c theActivity = [SELECT Id, Name, Channel__c, Begin_Date__c, End_Date__c, Market__c, Market__r.Name, Promotion_Type__c,
+            Promotion_Activity__c theActivity = [SELECT Id, Name, Channel__c, Begin_Date__c, End_Date__c, Market__c, Market__r.Name, Market__r.Promotion_Batch_Size__c, Promotion_Type__c,
                                                         (SELECT Id, Name, Account__c FROM Promotions__r),
                                                         (SELECT Id, Name, Product_NoFilter__c, Price__c, Quantity__c FROM Activity_Products__r)
                                                     FROM Promotion_Activity__c 
@@ -137,10 +137,11 @@ public class ACTION_CREATE_QUICK_PROMOTION implements Callable {
                 }
 
             } else {
+                Integer batchSize = theActivity.Market__r.Promotion_Batch_Size__c == null ? 200 : theActivity.Market__r.Promotion_Batch_Size__c.intValue();
                 String userName = UserInfo.getName();
                 String userEmail = UserInfo.getUserEmail();
                 CreateQuickPromotions_BatchController bc = new CreateQuickPromotions_BatchController(activityId, theActivity.Name, accountIds, userName, userEmail);
-                Database.executeBatch(bc);
+                Database.executeBatch(bc, batchSize);
 
                 msg = 'Batch process started to create promotions for ' + accountIds.size() + ' accounts';
             }

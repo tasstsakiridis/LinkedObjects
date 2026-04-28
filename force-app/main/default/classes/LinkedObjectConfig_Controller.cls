@@ -116,6 +116,7 @@ public with sharing class LinkedObjectConfig_Controller {
                 whereClause += ' (Source_Object_Record_Id__c = NULL AND (Market__c = NULL OR Market__r.Name=:marketName)))';
             }
             System.debug('configTypeId: ' + configTypeId);
+            System.debug('dsr.name: ' + dsr.getName());
             System.debug('marketName: ' + marketName);
             System.debug('recordId: ' + recordId);
             System.debug('whereClause: ' + whereClause);
